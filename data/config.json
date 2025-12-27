@@ -1,0 +1,99 @@
+{
+    "products": [
+        {
+            "id": "default",
+            "name": "Stator Line",
+            "excelPath": "/Users/haijian/Downloads/Stator Line Production Dashboard.xlsx",
+            "steps": [
+                "WO Released",
+                "Housing Readiness",
+                "Shaft Readiness",
+                "MTR Material Received",
+                "Lam Pressing",
+                "1st Straigtening",
+                "Flush & Dry",
+                "ENCAP Flush & Dry",
+                "Mag Wire Cutting",
+                "Winding",
+                "Epoxy",
+                "GT ENCAP LEAD",
+                "ENCAP",
+                "Shaft Straighten",
+                "PICKING",
+                "Lead",
+                "Motor ASSY",
+                "WELDING",
+                "Dye Pen",
+                "Painting",
+                "MIST",
+                "Outgoing",
+                "Receipt"
+            ],
+            "detailColumns": [
+                "WO ID",
+                "PN",
+                "Description",
+                "Remarks",
+                "Type",
+                "QCP",
+                "WO DUE",
+                "Priority"
+            ],
+            "monthlyTarget": 250,
+            "stepDurations": {
+                "WO Released": 0,
+                "Housing Readiness": 72,
+                "Shaft Readiness": 12,
+                "MTR Material Received": 12,
+                "Lam Pressing": 5,
+                "1st Straigtening": 5,
+                "Flush & Dry": 5,
+                "ENCAP Flush & Dry": 16,
+                "Mag Wire Cutting": 3,
+                "Winding": 12,
+                "Epoxy": 3,
+                "GT ENCAP LEAD": 8,
+                "ENCAP": 72,
+                "Shaft Straighten": 6,
+                "PICKING": 2,
+                "Lead": 5,
+                "Motor ASSY": 5,
+                "WELDING": 2,
+                "Dye Pen": 1.5,
+                "Painting": 2,
+                "MIST": 4,
+                "Outgoing": 1,
+                "Receipt": 0.5
+            }
+        },
+        {
+            "id": "product_1766711497896",
+            "name": "New Product Line",
+            "excelPath": "/Users/haijian/.gemini/antigravity/scratch/production-tracker-v3/data/New_Product_Line_template.xlsx",
+            "detailColumns": [
+                "WO ID",
+                "WO DUE",
+                "Priority",
+                "Remarks"
+            ],
+            "steps": [
+                "Step A",
+                "Step B",
+                "Completion"
+            ],
+            "monthlyTarget": 100,
+            "stepDurations": {
+                "Step A": 2,
+                "Step B": 4,
+                "Completion": 0
+            }
+        }
+    ],
+    "activeProductId": "default",
+    "USER_PASSWORD": "123456",
+    "SUPERVISOR_PASSWORD": "dhe-supervisor",
+    "ADMIN_PASSWORD": "dhe-admin",
+    "includeSaturday": false,
+    "includeSunday": false,
+    "includeWeekends": true
+}

@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  passwordHash  String
+  role          String    // 'admin' | 'supervisor' | 'user'
+  status        String    @default("approved") // 'pending' | 'approved' | 'disabled'
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  logs          OperationLog[]
+}
+
+model Product {
+  id            String    @id @default(uuid())
+  slug          String    @unique // e.g. 'stator-line'
+  name          String
+  config        String    // JSON: { detailColumns, steps, stepDurations, monthlyTarget, excelPath }
+  watchFolder   String?   // Optional: folder path to watch for auto-import
+  isActive      Boolean   @default(false) // Track the currently active product
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+}
+
+model Order {
+  id            String    @id @default(uuid())
+  woId          String    // Work Order ID from Excel
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  data          String    // JSON: Dynamic field values { "Step1": "Done", "Step2": "WIP", "Received": "2024-..." }
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  logs          OperationLog[]
+
+  @@unique([productId, woId]) // WO ID must be unique within a product line
+}
+
+model OperationLog {
+  id            String    @id @default(uuid())
+  timestamp     DateTime  @default(now())
+  action        String    // 'Start', 'Done', 'Block', 'Reset', 'Update'
+  details       String    // JSON: { step, previousValue, newValue } ex.
+  
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  
+  orderId       String?
+  order         Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  // Denormalized fields for easier history viewing if user/order is deleted
+  snapshot      String?   // JSON snapshot of relevant info
+}

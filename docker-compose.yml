@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: production-tracker-v5
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+      # Add your OpenAI Key here or in a .env file next to this compose file
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      # Persist the database and other prisma files
+      - ./prisma:/app/prisma
+      # Optional: Persist uploaded files if you implement local file storage later
+      # - ./uploads:/app/uploads
+    networks:
+      - tracker-network
+
+networks:
+  tracker-network:
+    driver: bridge
