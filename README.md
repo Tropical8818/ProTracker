@@ -1,86 +1,100 @@
-# ProTracker V5 - AI-Powered Production Tracker
+# ProTracker - AI-Powered Production Tracker
 
-> 🤖 **V5 新功能**: 集成 OpenAI GPT 智能助手，提供自然语言查询、异常检测、智能分析等 AI 功能。
+[🇺🇸 English](README.md) | [🇨🇳 简体中文](README_ZH.md)
 
-## 🚀 快速开始
+> 🤖 **V5 New Features**: Integrated OpenAI GPT intelligent assistant, providing natural language queries, anomaly detection, intelligent analysis, and other AI capabilities.
 
-### 1. 安装依赖
+## 🚀 Quick Start
+
+### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. 配置环境变量
-在 `.env` 文件中添加你的 OpenAI API Key:
+### 2. Configure Environment Variables
+Add your OpenAI API Key to the `.env` file:
 ```
 OPENAI_API_KEY=sk-your-api-key-here
 ```
 
-### 3. 启动开发服务器
+### 3. Start Development Server
 ```bash
 npm run dev
 ```
 
-访问 http://localhost:3000
+Visit http://localhost:3000
 
 ---
 
-## ✨ AI 功能
+## ✨ AI Features
 
-### 💬 AI 聊天助手
-点击右下角的聊天按钮，即可与 AI 助手对话：
+### 💬 AI Chat Assistant
+Click the chat button in the bottom right corner to converse with the AI assistant:
 
-- **查询订单**: "WO-123 现在什么状态？"
-- **统计分析**: "今天完成了多少订单？"
-- **异常检测**: "哪些订单可能延期？"
-- **生产洞察**: "当前生产状态如何？"
+- **Query Orders**: "What is the status of WO-123?"
+- **Statistical Analysis**: "How many orders were completed today?"
+- **Anomaly Detection**: "Which orders might be delayed?"
+- **Production Insights**: "What is the current production status?"
 
-### 🔮 未来功能 (规划中)
-- 智能 ECD 预测
-- 自动异常警报
-- 智能 Excel 导入列识别
-- 生产报告自动生成
+### 🔮 Future Features (Planned)
+- Intelligent ECD Prediction
+- Automatic Anomaly Alerts
+- Intelligent Excel Import Column Recognition
+- Automatic Production Report Generation
 
 ---
 
-## 📁 项目结构
+## 📁 Project Structure
 
 ```
 src/
 ├── app/
 │   ├── api/
 │   │   └── ai/
-│   │       └── chat/route.ts   # AI 聊天 API
+│   │       └── chat/route.ts   # AI Chat API
 │   └── dashboard/
-│       └── page.tsx            # 集成 AI Chat Panel
+│       └── page.tsx            # Integrated AI Chat Panel
 ├── components/
-│   └── AIChatPanel.tsx         # AI 聊天界面组件
+│   └── AIChatPanel.tsx         # AI Chat Interface Component
 └── lib/
     └── ai/
-        ├── client.ts           # OpenAI 客户端
-        ├── context.ts          # 生产数据上下文构建
-        └── prompts.ts          # AI 系统提示词
+        ├── client.ts           # OpenAI Client
+        ├── context.ts          # Production Data Context Builder
+        └── prompts.ts          # AI System Prompts
 ```
 
 ---
 
-## 🔒 安全注意
+## 🔒 Security Notes
 
-- 不要将 API Key 提交到代码库
-- 建议在生产环境使用环境变量或密钥管理服务
-- AI 功能仅对已登录用户可用
+- Do not commit your API Key to the codebase.
+- It is recommended to use environment variables or secret management services in production environments.
+- AI features are only available to logged-in users.
 
 ---
 
-## 📝 更新日志
+## 📝 Changelog
 
 ### V5.0.0
-- ✨ 新增 AI 聊天助手
-- ✨ 集成 OpenAI GPT-4o-mini
-- ✨ 生产数据智能分析
-- 🔧 基于 V4 全部功能
+- ✨ Added AI Chat Assistant
+- ✨ Integrated OpenAI GPT-4o-mini
+- ✨ Intelligent Production Data Analysis
+- 🔧 Based on all V4 features
 
 ### V4.0.0
-- 多产品线支持
-- 权限管理系统
-- 批量操作
-- 操作日志
+- Multi-product line support
+- Permission management system
+- Batch operations
+- Operation logs
+
+---
+
+## ☕ Support
+
+If you find this project helpful, please consider buying the author a coffee! Your support is the motivation for my continuous maintenance and updates.
+
+### Buy Me a Coffee
+<a href="https://www.buymeacoffee.com/YOUR_USERNAME" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
+### PayPal
+![PayPal QR Code](YOUR_PAYPAL_QR_CODE_IMAGE_URL)

@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    container_name: production-tracker-v5
+    container_name: protracker
     build:
       context: .
       dockerfile: Dockerfile

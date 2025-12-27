@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Production Tracker",
+  title: "ProTracker",
   description: "Production order tracking system",
   manifest: "/manifest.json",
   themeColor: "#4f46e5",
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "PT Tracker",
+    title: "ProTracker",
   },
   icons: {
     icon: "/icon-192.svg",

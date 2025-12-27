@@ -74,7 +74,7 @@ Docker is ideal for isolating the application environment.
 ### 1. Build the Image
 
 ```bash
-docker build -t production-tracker-v5 .
+docker build -t protracker .
 ```
 
 ### 2. Run the Container
@@ -90,7 +90,7 @@ docker run -d \
   -v $(pwd)/prisma:/app/prisma \
   -e DATABASE_URL="file:/app/prisma/dev.db" \
   -e OPENAI_API_KEY="your-api-key-here" \
-  production-tracker-v5
+  protracker
 ```
 
 *Note: The `-v $(pwd)/prisma:/app/prisma` flag mounts your local `prisma` directory (containing `dev.db`) into the container.*
