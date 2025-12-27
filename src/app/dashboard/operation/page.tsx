@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Factory, Table2, HardHat, Settings, LogOut, Search, User, CheckCircle, Clock, AlertTriangle, Ban, RotateCcw, X, ScanBarcode } from 'lucide-react';
+import { Factory, Table2, HardHat, Settings, LogOut, Search, User, CheckCircle, Clock, AlertTriangle, Ban, RotateCcw, X, ScanBarcode, PauseCircle } from 'lucide-react';
 import type { Order } from '@/lib/excel';
 import dynamic from 'next/dynamic';
 
@@ -151,6 +151,7 @@ function OperationContent() {
         const v = val.toUpperCase();
         if (v.startsWith('P')) return 'bg-[#0014DC] text-white';
         if (v === 'WIP') return 'bg-yellow-100 text-yellow-800';
+        if (v === 'HOLD') return 'bg-orange-100 text-orange-800';
         if (v === 'QN' || v === 'DIFA') return 'bg-red-100 text-red-800';
         if (v === 'N/A') return 'bg-slate-200 text-slate-600';
         if (/\d{4}-\d{2}-\d{2}/.test(val)) return 'bg-green-100 text-green-800';
@@ -277,7 +278,7 @@ function OperationContent() {
                                         </div>
 
                                         {/* Action Buttons - Mobile optimized with larger touch targets */}
-                                        <div className={`grid grid-cols-2 gap-2 ${isLocked ? 'pointer-events-none' : ''}`}>
+                                        <div className={`grid grid-cols-3 gap-2 ${isLocked ? 'pointer-events-none' : ''}`}>
                                             <button
                                                 onClick={() => handleAction(step, 'Done')}
                                                 disabled={updating || isLocked}
@@ -293,6 +294,14 @@ function OperationContent() {
                                             >
                                                 <Clock className="w-6 h-6 mb-1" />
                                                 WIP
+                                            </button>
+                                            <button
+                                                onClick={() => handleAction(step, 'Hold')}
+                                                disabled={updating || isLocked}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-lg text-xs font-medium transition-all active:scale-95 ${isLocked ? 'text-slate-300 bg-slate-100' : 'text-orange-600 bg-orange-50 hover:bg-orange-100 active:bg-orange-200'}`}
+                                            >
+                                                <PauseCircle className="w-6 h-6 mb-1" />
+                                                Hold
                                             </button>
                                             <button
                                                 onClick={() => handleAction(step, 'QN')}
@@ -313,7 +322,7 @@ function OperationContent() {
                                             <button
                                                 onClick={() => handleAction(step, 'Reset')}
                                                 disabled={updating || isLocked}
-                                                className={`col-span-2 flex items-center justify-center gap-2 p-2 rounded-lg text-xs font-medium transition-all active:scale-95 ${isLocked ? 'text-slate-300 bg-slate-100' : 'text-slate-400 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'}`}
+                                                className={`col-span-3 flex items-center justify-center gap-2 p-2 rounded-lg text-xs font-medium transition-all active:scale-95 ${isLocked ? 'text-slate-300 bg-slate-100' : 'text-slate-400 bg-slate-100 hover:bg-slate-200 active:bg-slate-300'}`}
                                             >
                                                 <RotateCcw className="w-4 h-4" />
                                                 Reset

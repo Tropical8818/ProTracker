@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -16,22 +16,23 @@ export const metadata: Metadata = {
   title: "ProTracker",
   description: "Production order tracking system",
   manifest: "/manifest.json",
-  themeColor: "#4f46e5",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
+  icons: {
+    icon: "/icon-192.svg",
+    apple: "/icon-192.svg",
   },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "ProTracker",
   },
-  icons: {
-    icon: "/icon-192.svg",
-    apple: "/icon-192.svg",
-  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#4f46e5",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
