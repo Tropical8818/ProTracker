@@ -93,8 +93,5 @@ src/
 
 If you find this project helpful, please consider buying the author a coffee! Your support is the motivation for my continuous maintenance and updates.
 
-### Buy Me a Coffee
-<a href="https://www.buymeacoffee.com/YOUR_USERNAME" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
 ### PayPal
 ![PayPal QR Code](https://album.whatifthenhow.com/i/2025/12/27/694fbcadaf646.png)
