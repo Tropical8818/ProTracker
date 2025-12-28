@@ -248,14 +248,15 @@ export default function UserManagementPage() {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium
-                                            ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
-                                                user.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' :
-                                                    user.role === 'kiosk' ? 'bg-amber-100 text-amber-700' :
-                                                        'bg-slate-100 text-slate-700'}`}>
+                                            ${user.username === 'superadmin' ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-amber-800 border border-amber-200' :
+                                                user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
+                                                    user.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' :
+                                                        user.role === 'kiosk' ? 'bg-amber-100 text-amber-700' :
+                                                            'bg-slate-100 text-slate-700'}`}>
                                             {user.role === 'admin' && <Shield className="w-3 h-3" />}
                                             {user.role === 'supervisor' && <UserCog className="w-3 h-3" />}
                                             {user.role === 'kiosk' && <Monitor className="w-3 h-3" />}
-                                            {user.role}
+                                            {user.username === 'superadmin' ? 'Super Admin' : user.role}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
