@@ -2,7 +2,7 @@
 
 [🇺🇸 English](README.md) | [🇨🇳 简体中文](README_ZH.md)
 
-> 🤖 **V6.1.3 New Features**: Super Admin Role Hierarchy, Employee ID Privacy Protection, and Enhanced User Management.
+> 🤖 **V6.1.3 New Features**: Employee ID Login, Super Admin Role Hierarchy, Employee ID Privacy Protection, and Enhanced User Management.
 
 ## 🚀 Quick Start
 
@@ -66,8 +66,10 @@ Specialized shop floor monitor view:
 ## 📝 Changelog
 
 ### V6.1.3
+- 🔑 **Employee ID Login**: Unified login system using Employee IDs instead of usernames.
 - 👑 **Super Admin Hierarchy**: Only Super Admin can create/promote other admins.
-- 🛡️ **Employee ID Privacy**: AI uses anonymous employee IDs instead of real names.
+- 🛡️- **Employee ID Login**: Unified login system using Employee IDs instead of usernames.
+- **Employee ID Privacy**: AI uses anonymous employee IDs to protect employee privacy.l names.
 - 🎨 **Enhanced UI**: Super Admin displays with special gold badge in user management.
 
 ### V6.1.0

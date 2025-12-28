@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import * as XLSX from 'xlsx';
-import { getAIClient } from '@/lib/ai/client';
+import getOpenAI from '@/lib/ai/client';
 import { getConfig } from '@/lib/config';
 
 const AI_ANALYSIS_PROMPT = `You are an intelligent data analyst. Analyze Excel column headers and suggest mappings to a production tracking system.
@@ -76,14 +76,16 @@ export async function POST(request: NextRequest) {
 
         // Call AI to analyze
         const config = getConfig();
-        const aiClient = getAIClient(config.aiProvider || 'openai');
+        const aiClient = getOpenAI(config.aiProvider || 'openai');
 
         const contextMessage = existingSteps.length > 0
             ? `\n\nExisting product steps for reference: ${existingSteps.join(', ')}`
             : '';
 
+        const model = config.aiProvider === 'ollama' ? (config.ollamaModel || 'llama3.1') : 'gpt-4o-mini';
+
         const response = await aiClient.chat.completions.create({
-            model: config.aiModel || 'gpt-4o-mini',
+            model: model,
             messages: [
                 { role: 'system', content: AI_ANALYSIS_PROMPT },
                 {

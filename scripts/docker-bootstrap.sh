@@ -13,9 +13,9 @@ if [ ! -d "/app/prisma" ]; then
     exit 1
 fi
 
-# Run database migrations (push schema to database)
-echo "📦 Syncing database schema..."
-npx prisma db push --accept-data-loss --skip-generate
+# Database schema is pre-synced during Docker build (prisma db push)
+# The mounted volume will use existing database if present, or the pre-created one
+echo "📦 Database schema ready (pre-synced during build)"
 
 # Check if we need to seed the default admin
 echo "🔍 Checking for default admin user..."
@@ -35,6 +35,7 @@ async function checkAndSeed() {
                 data: {
                     username: 'admin',
                     passwordHash: hash,
+                    employeeId: 'admin',
                     role: 'admin',
                     status: 'approved'
                 }

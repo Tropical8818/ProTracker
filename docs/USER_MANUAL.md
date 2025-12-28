@@ -1,6 +1,6 @@
 # ProTracker User Manual
 
-**Version 6.0.0**
+**Version 6.1.3**
 
 ---
 
@@ -60,7 +60,7 @@
 ### Login
 
 1. Navigate to the ProTracker URL (e.g., `http://localhost:3001`)
-2. Enter your **Username** and **Password**
+2. Enter your **Employee ID** and **Password**
 3. Click **Login**
 
 > **Note**: If you don't have an account, contact your administrator or use the registration link.
@@ -68,7 +68,7 @@
 ### Registration
 
 1. Click "Don't have an account? Create one"
-2. Enter your desired username and password
+2. Enter your desired username, **Employee ID**, and password
 3. Submit the form
 4. Wait for administrator approval (new accounts require approval)
 
@@ -148,6 +148,7 @@ In Operation View, you can quickly update order status:
 - **Console Lock**:
     - Click the factory logo in the header to attempt administrative actions.
     - **Secure Unlock**: You must enter the currently logged-in account's **Password** to unlock the console for switching product lines or filtering stages.
+    - **Display Density**: Toggle between **Comfortable** (default) and **Compact** views using the list icon in the header to fit more orders on the screen.
     - Once unlocked, the console remains active until you click the lock icon again.
 
 ---
@@ -313,7 +314,7 @@ Navigate to **Settings → User Management** to:
 - Contact administrator to restart the server
 
 **Q: Can't log in**
-- Check username and password
+- Check Employee ID and password
 - Ensure your account is approved
 - Contact administrator
 
@@ -332,4 +333,4 @@ Navigate to **Settings → User Management** to:
 
 For technical support, contact your system administrator.
 
-**ProTracker v6.0.0** - AI-Powered Production Tracker
+**ProTracker v6.1.3** - AI-Powered Production Tracker

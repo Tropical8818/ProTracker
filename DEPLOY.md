@@ -8,6 +8,7 @@ This guide covers two methods to deploy **ProTracker V6.1.3**:
 
 ## What's New in V6.1.3
 - **Super Admin Hierarchy**: Only Super Admin can create/promote other admins.
+- **Employee ID Login**: Unified login system using Employee IDs instead of usernames.
 - **Employee ID Privacy**: AI uses anonymous employee IDs to protect employee privacy.
 - **Enhanced User Management**: Special gold badge for Super Admin display.
 - **Professional Kiosk Mode**: Specialized monitor view with auto-scroll.
