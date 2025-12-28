@@ -65,8 +65,13 @@ export async function PATCH(
             }
 
             // Supervisor cannot promote to Admin/Supervisor
-            if (isSupervisor && body.role && body.role !== 'user') {
+            if (isSupervisor && body.role && body.role !== 'user' && body.role !== 'kiosk') {
                 return NextResponse.json({ error: 'Supervisors cannot promote users' }, { status: 403 });
+            }
+
+            // Only Super Admin can promote to admin
+            if (body.role === 'admin' && session.username !== 'superadmin') {
+                return NextResponse.json({ error: 'Only Super Admin can promote users to admin' }, { status: 403 });
             }
 
             // Check Employee ID uniqueness if changed

@@ -50,6 +50,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Supervisors can only create standard users and kiosk users' }, { status: 403 });
         }
 
+        // Only Super Admin can create admin users
+        if (role === 'admin' && session.username !== 'superadmin') {
+            return NextResponse.json({ error: 'Only Super Admin can create admin accounts' }, { status: 403 });
+        }
+
         // Check existence
         const existing = await prisma.user.findFirst({
             where: {

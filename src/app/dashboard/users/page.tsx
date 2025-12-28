@@ -20,6 +20,7 @@ export default function UserManagementPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentUserRole, setCurrentUserRole] = useState<string>('');
+    const [currentUsername, setCurrentUsername] = useState<string>('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isPassModalOpen, setIsPassModalOpen] = useState(false);
 
@@ -64,6 +65,7 @@ export default function UserManagementPage() {
             }
 
             setCurrentUserRole(authData.role);
+            setCurrentUsername(authData.username);
 
             // Load users
             const usersRes = await fetch('/api/users');
@@ -388,7 +390,7 @@ export default function UserManagementPage() {
                                     <option value="user">User</option>
                                     <option value="kiosk">Kiosk</option>
                                     {currentUserRole === 'admin' && <option value="supervisor">Supervisor</option>}
-                                    {currentUserRole === 'admin' && <option value="admin">Admin</option>}
+                                    {currentUsername === 'superadmin' && <option value="admin">Admin</option>}
                                 </select>
                             </div>
                             <div className="flex justify-end gap-2 mt-6">
@@ -440,7 +442,7 @@ export default function UserManagementPage() {
                                     <option value="user">User</option>
                                     <option value="kiosk">Kiosk</option>
                                     {currentUserRole === 'admin' && <option value="supervisor">Supervisor</option>}
-                                    {currentUserRole === 'admin' && <option value="admin">Admin</option>}
+                                    {currentUsername === 'superadmin' && <option value="admin">Admin</option>}
                                 </select>
                             </div>
                             <div className="flex justify-end gap-2 mt-6">

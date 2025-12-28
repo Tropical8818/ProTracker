@@ -56,3 +56,8 @@ export async function destroySession(): Promise<void> {
     const cookieStore = await cookies();
     cookieStore.delete(SESSION_COOKIE);
 }
+
+// Helper function to check if a user is Super Admin
+export function isSuperAdmin(username: string): boolean {
+    return username === 'superadmin';
+}
