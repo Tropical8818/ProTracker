@@ -4,8 +4,9 @@ import bcrypt from 'bcryptjs';
 
 const SESSION_COOKIE = 'pt_session';
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const KIOSK_SESSION_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-export type UserRole = 'user' | 'supervisor' | 'admin';
+export type UserRole = 'user' | 'supervisor' | 'admin' | 'kiosk';
 
 export interface Session {
     userId: string;
@@ -15,11 +16,12 @@ export interface Session {
 }
 
 export async function createSession(userId: string, username: string, role: string): Promise<void> {
+    const duration = role === 'kiosk' ? KIOSK_SESSION_DURATION : SESSION_DURATION;
     const session: Session = {
         userId,
         username,
         role: role as UserRole,
-        expiresAt: Date.now() + SESSION_DURATION
+        expiresAt: Date.now() + duration
     };
 
     const cookieStore = await cookies();
@@ -27,7 +29,7 @@ export async function createSession(userId: string, username: string, role: stri
         httpOnly: true,
         secure: false, // Allow HTTP for reverse proxy compatibility
         sameSite: 'lax',
-        maxAge: SESSION_DURATION / 1000,
+        maxAge: duration / 1000,
         path: '/'
     });
 }

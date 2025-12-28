@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Factory, Table2, HardHat, Settings, LogOut, Save, FileSpreadsheet, Lock, Plus, Trash2, Edit2, X, ChevronUp, ChevronDown, Package, RefreshCw, Check, Eye, EyeOff, Clock, FilePlus, Info, User, Key, Users, Database, Download, Bot, Sparkles } from 'lucide-react';
+import { Factory, Table2, HardHat, Settings, LogOut, Save, FileSpreadsheet, Lock, Plus, Trash2, Edit2, X, ChevronUp, ChevronDown, Package, RefreshCw, Check, Eye, EyeOff, Clock, FilePlus, Info, User, Key, Users, Database, Download, Bot, Sparkles, Monitor } from 'lucide-react';
 
 interface Product {
     id: string;
@@ -33,6 +33,7 @@ interface Config {
     ollamaModel?: string;
     systemPrompt?: string;
     rolePrompts?: Record<string, string>;
+    kioskPin?: string;
 }
 
 function PasswordInput({
@@ -1143,6 +1144,8 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             )}
+
+
 
                             {/* AI Prompt Engineering (Admin Only) */}
                             {currentUser?.role === 'admin' && (

@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { usePathname } from 'next/navigation';
 
 interface RoleIndicatorProps {
     username: string;
@@ -6,6 +9,11 @@ interface RoleIndicatorProps {
 }
 
 export default function RoleIndicator({ username, role }: RoleIndicatorProps) {
+    const pathname = usePathname();
+
+    // Hide indicator on kiosk page
+    if (pathname?.includes('/dashboard/kiosk')) return null;
+
     return (
         <div className="fixed bottom-2 right-2 z-50 pointer-events-none select-none">
             <div className="bg-white/80 backdrop-blur-sm border border-slate-200 shadow-sm rounded-full px-3 py-1 text-[10px] font-medium text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">

@@ -107,6 +107,8 @@ The main table shows all work orders with:
 
 ---
 
+---
+
 ## Operation View
 
 The **Operation View** is optimized for production floor workers using tablets or mobile devices.
@@ -129,6 +131,26 @@ In Operation View, you can quickly update order status:
    - **Hold** - Put on hold
    - **QN** - Quality notification
    - **N/A** - Not applicable
+
+---
+
+## Kiosk Mode (Shop Floor Monitor)
+
+**Kiosk Mode** is designed for terminal displays (tablets or large screens) situated on the production floor, providing a high-contrast, full-screen view.
+
+### Accessing Kiosk Mode
+- **Dedicated Account**: It is recommended to create a user with the `kiosk` role. Once logged in, this account is automatically locked to the Shop Floor Monitor and cannot access the administrative dashboard.
+- **Long-Term Session**: Kiosk sessions stay active for **30 days**, making them ideal for always-on display terminals.
+
+### Key Features
+- **Auto-Refresh**: Production data updates automatically every 60 seconds.
+- **Smooth Auto-Scroll**: If there are many orders, the display will smoothly scroll to loop through all active work orders.
+- **Console Lock**:
+    - Click the factory logo in the header to attempt administrative actions.
+    - **Secure Unlock**: You must enter the currently logged-in account's **Password** to unlock the console for switching product lines or filtering stages.
+    - Once unlocked, the console remains active until you click the lock icon again.
+
+---
 
 ---
 
@@ -275,6 +297,7 @@ Navigate to **Settings → User Management** to:
 | Role | Permissions |
 |------|-------------|
 | **User** | View orders, update status in Operation View |
+| **Kiosk** | Strictly restricted to Shop Floor Monitor, 30-day sessions, no dashboard access |
 | **Supervisor** | All User permissions + Import orders, batch operations, manage basic users |
 | **Admin** | All permissions + Settings, User Management, Data Management |
 

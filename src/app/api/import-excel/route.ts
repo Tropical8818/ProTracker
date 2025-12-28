@@ -153,6 +153,23 @@ export async function POST(request: NextRequest) {
                 continue;
             }
 
+            // NEW LOGIC: Separate detail columns from step columns
+            // Detail columns are what we import from Excel
+            const detailData: Record<string, string> = {};
+            const steps: string[] = config.steps || [];
+            const detailColumns: string[] = config.detailColumns || [];
+
+            // Only keep columns that are in detailColumns OR are WO ID
+            Object.keys(rowData).forEach(key => {
+                if (key === 'WO ID' || detailColumns.includes(key) ||
+                    key.toLowerCase().includes('customer') ||
+                    key.toLowerCase().includes('qty') ||
+                    key.toLowerCase().includes('ecd') ||
+                    key.toLowerCase() === woRelKey?.toLowerCase()) {
+                    detailData[key] = rowData[key];
+                }
+            });
+
             // Check if order already exists
             const existing = await prisma.order.findUnique({
                 where: {
@@ -163,29 +180,52 @@ export async function POST(request: NextRequest) {
                 }
             });
 
+            // Prepare final order data: details + steps
+            const finalOrderData = { ...detailData };
+
+            // Initialize all steps from product config
+            steps.forEach((step, index) => {
+                if (existing) {
+                    // If order exists, preserve existing step data
+                    const existingData = JSON.parse(existing.data);
+                    finalOrderData[step] = existingData[step] || '';
+                } else {
+                    // For new orders, auto-set first step timestamp to mark arrival at the first station
+                    if (index === 0) {
+                        const now = new Date();
+                        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const day = String(now.getDate()).padStart(2, '0');
+                        const month = months[now.getMonth()];
+                        const hour = String(now.getHours()).padStart(2, '0');
+                        const minute = String(now.getMinutes()).padStart(2, '0');
+                        finalOrderData[step] = `${day}-${month}, ${hour}:${minute}`;
+                    } else {
+                        finalOrderData[step] = '';
+                    }
+                }
+            });
 
             if (existing) {
                 if (mode === 'skip-existing') {
-                    // Skip existing orders
                     skippedOrders.push(woId);
                     continue;
                 } else {
-                    // Update existing order
+                    // Update: merge new details with existing step progress
                     await prisma.order.update({
                         where: { id: existing.id },
                         data: {
-                            data: JSON.stringify(rowData)
+                            data: JSON.stringify(finalOrderData)
                         }
                     });
                     updatedOrders.push(woId);
                 }
             } else {
-                // Create new order
+                // Create new order with empty steps
                 await prisma.order.create({
                     data: {
                         woId,
                         productId,
-                        data: JSON.stringify(rowData)
+                        data: JSON.stringify(finalOrderData)
                     }
                 });
                 importedOrders.push(woId);

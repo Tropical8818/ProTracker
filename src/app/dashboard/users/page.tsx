@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Users, UserPlus, Shield, UserCog, Check, X, Ban,
-    Unlock, Lock, Loader2, RefreshCw, Key, ArrowLeft
+    Unlock, Lock, Loader2, RefreshCw, Key, ArrowLeft, Monitor
 } from 'lucide-react';
 
 interface User {
     id: string;
     username: string;
-    role: 'admin' | 'supervisor' | 'user';
+    role: 'admin' | 'supervisor' | 'user' | 'kiosk';
     status: 'pending' | 'approved' | 'disabled';
     createdAt: string;
 }
@@ -229,9 +229,11 @@ export default function UserManagementPage() {
                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium
                                             ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
                                                 user.role === 'supervisor' ? 'bg-indigo-100 text-indigo-700' :
-                                                    'bg-slate-100 text-slate-700'}`}>
+                                                    user.role === 'kiosk' ? 'bg-amber-100 text-amber-700' :
+                                                        'bg-slate-100 text-slate-700'}`}>
                                             {user.role === 'admin' && <Shield className="w-3 h-3" />}
                                             {user.role === 'supervisor' && <UserCog className="w-3 h-3" />}
+                                            {user.role === 'kiosk' && <Monitor className="w-3 h-3" />}
                                             {user.role}
                                         </span>
                                     </td>
@@ -341,6 +343,7 @@ export default function UserManagementPage() {
                                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-black font-medium"
                                 >
                                     <option value="user">User</option>
+                                    <option value="kiosk">Kiosk</option>
                                     {currentUserRole === 'admin' && <option value="supervisor">Supervisor</option>}
                                     {currentUserRole === 'admin' && <option value="admin">Admin</option>}
                                 </select>

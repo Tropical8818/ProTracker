@@ -9,8 +9,12 @@ import {
     Play, Ban, PauseCircle, Eraser, Info, HardHat, Upload, Users,
     Factory, ChevronDown, Table2, Pencil, Eye, EyeOff, ClipboardList,
     RefreshCw, X, FileSpreadsheet, Check, Clock, CheckCircle2, Layers, AlertTriangle, Sparkles, Megaphone,
-    History, Loader2, Download, Trash2
+    History, Loader2, Download, Trash2, BarChart2, TrendingUp, Monitor, ChevronUp
 } from 'lucide-react';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    LineChart, Line, AreaChart, Area
+} from 'recharts';
 import PlannerTable from '@/components/PlannerTable';
 import MobilePlannerCards from '@/components/MobilePlannerCards';
 import DraggableMenu from '@/components/DraggableMenu';
@@ -97,6 +101,14 @@ export default function DashboardPage() {
     // Barcode Scanner
     const [scannerOpen, setScannerOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showAnalytics, setShowAnalytics] = useState(false);
+    const [analyticsData, setAnalyticsData] = useState<{
+        productivity: { name: string, count: number }[],
+        bottlenecks: { name: string, count: number }[],
+        trend: { date: string, output: number }[],
+        summary: { topProducer: string, bottleneck: string, totalOutput: number }
+    } | null>(null);
+    const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
     // Import State
     const [isImporting, setIsImporting] = useState(false);
@@ -319,6 +331,29 @@ export default function DashboardPage() {
             setRefreshing(false);
         }
     };
+
+    // Fetch analytics data
+    const fetchAnalyticsData = async (productId: string) => {
+        if (!productId) return;
+        setLoadingAnalytics(true);
+        try {
+            const res = await fetch(`/api/analytics?productId=${productId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setAnalyticsData(data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch analytics:', err);
+        } finally {
+            setLoadingAnalytics(false);
+        }
+    };
+
+    useEffect(() => {
+        if (showAnalytics && selectedProductId) {
+            fetchAnalyticsData(selectedProductId);
+        }
+    }, [showAnalytics, selectedProductId]);
 
     // Initial load - fetch config and orders
     useEffect(() => {
@@ -700,6 +735,18 @@ export default function DashboardPage() {
                                 <span className="hidden sm:inline">Operation</span>
                             </button>
 
+
+
+                            <button
+                                onClick={() => setShowAnalytics(!showAnalytics)}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${showAnalytics ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                title="Production Insights"
+                            >
+                                <BarChart2 className="w-4 h-4" />
+                                <span className="hidden sm:inline">Insights</span>
+                            </button>
+
                             {/* Batch Operations Group */}
                             {(role === 'admin' || role === 'supervisor') && (
                                 <div className="flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-lg border border-slate-200">
@@ -911,6 +958,126 @@ export default function DashboardPage() {
                     </div>
                 </div>
             </header>
+
+            {/* Production Insights Section */}
+            {showAnalytics && (
+                <div className="bg-white border-b border-slate-200 animate-in slide-in-from-top duration-300">
+                    <div className="max-w-7xl mx-auto px-4 py-8">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-2">
+                                <TrendingUp className="w-5 h-5 text-indigo-600" />
+                                <h2 className="text-xl font-bold text-slate-900">Production Insights</h2>
+                                <span className="text-xs bg-indigo-100 text-indigo-700 font-medium px-2 py-0.5 rounded-full ml-2">Last 7 Days</span>
+                            </div>
+                            <button
+                                onClick={() => fetchAnalyticsData(selectedProductId)}
+                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+                            >
+                                <RefreshCw className={`w-4 h-4 ${loadingAnalytics ? 'animate-spin' : ''}`} />
+                            </button>
+                        </div>
+
+                        {loadingAnalytics && !analyticsData ? (
+                            <div className="h-[300px] flex items-center justify-center">
+                                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                            </div>
+                        ) : analyticsData ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Summary Cards */}
+                                <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4 mb-2">
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <div className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Top Producing Step</div>
+                                        <div className="text-xl font-bold text-indigo-600">{analyticsData.summary.topProducer}</div>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <div className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Current Bottleneck</div>
+                                        <div className="text-xl font-bold text-orange-600">{analyticsData.summary.bottleneck}</div>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        <div className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Total Yield (7d)</div>
+                                        <div className="text-xl font-bold text-emerald-600">{analyticsData.summary.totalOutput} units</div>
+                                    </div>
+                                </div>
+
+                                {/* Step Productivity Chart */}
+                                <div className="bg-white p-5 rounded-xl border border-slate-200 h-[350px]">
+                                    <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Output per Step
+                                    </h3>
+                                    <ResponsiveContainer width="100%" height="90%">
+                                        <BarChart data={analyticsData.productivity}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                                            <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                                            <Tooltip
+                                                cursor={{ fill: '#f8fafc' }}
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Bar dataKey="count" fill="#4f46e5" radius={[4, 4, 0, 0]} barSize={32} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                {/* Bottleneck Chart */}
+                                <div className="bg-white p-5 rounded-xl border border-slate-200 h-[350px]">
+                                    <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                                        <AlertTriangle className="w-4 h-4 text-orange-500" /> Work In Progress
+                                    </h3>
+                                    <ResponsiveContainer width="100%" height="90%">
+                                        <BarChart data={analyticsData.bottlenecks}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                                            <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                                            <Tooltip
+                                                cursor={{ fill: '#fff7ed' }}
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Bar dataKey="count" fill="#f97316" radius={[4, 4, 0, 0]} barSize={32} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                {/* Yield Trend Chart */}
+                                <div className="bg-white p-5 rounded-xl border border-slate-200 h-[350px]">
+                                    <h3 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                                        <TrendingUp className="w-4 h-4 text-indigo-500" /> Daily Production
+                                    </h3>
+                                    <ResponsiveContainer width="100%" height="90%">
+                                        <AreaChart data={analyticsData.trend}>
+                                            <defs>
+                                                <linearGradient id="colorOutput" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1} />
+                                                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                                            <XAxis
+                                                dataKey="date"
+                                                fontSize={10}
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tickFormatter={(str) => {
+                                                    const date = new Date(str);
+                                                    return format(date, 'MMM d');
+                                                }}
+                                            />
+                                            <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                                            <Tooltip
+                                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                            />
+                                            <Area type="monotone" dataKey="output" stroke="#4f46e5" fillOpacity={1} fill="url(#colorOutput)" strokeWidth={3} />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-[300px] flex items-center justify-center text-slate-400">
+                                No production data found for the last 7 days.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Main Content */}
             <main className="p-4">

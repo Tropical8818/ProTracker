@@ -45,8 +45,8 @@ export async function POST(request: Request) {
         }
 
         // Permission check
-        if (session.role === 'supervisor' && role !== 'user') {
-            return NextResponse.json({ error: 'Supervisors can only create standard users' }, { status: 403 });
+        if (session.role === 'supervisor' && role !== 'user' && role !== 'kiosk') {
+            return NextResponse.json({ error: 'Supervisors can only create standard users and kiosk users' }, { status: 403 });
         }
 
         // Check existence
