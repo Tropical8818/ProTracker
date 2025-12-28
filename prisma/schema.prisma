@@ -13,6 +13,7 @@ datasource db {
 model User {
   id            String    @id @default(uuid())
   username      String    @unique
+  employeeId    String?   @unique   // Employee ID for privacy (used by AI)
   passwordHash  String
   role          String    // 'admin' | 'supervisor' | 'user'
   status        String    @default("approved") // 'pending' | 'approved' | 'disabled'

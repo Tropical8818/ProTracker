@@ -55,16 +55,10 @@ export async function PATCH(
             });
         }
 
-        // 2. Status/Role Change (Approve, Disable, Change Role)
-        if (body.status || body.role) {
+        // 2. Status/Role/EmployeeID Change
+        if (body.status || body.role || body.hasOwnProperty('employeeId')) {
             // Only Admin or (Supervisor if target is User)
             const canManage = isAdmin || (isSupervisor && targetIsUser);
-
-            // Self cannot change own status/role
-            if (isSelf && !isAdmin) {
-                // Admin technically can disable self but usually bad idea, let's allow it for simplicity or block?
-                // Let's block self-status change to avoid lock out unless admin.
-            }
 
             if (!canManage) {
                 return NextResponse.json({ error: 'Permission denied to update user details' }, { status: 403 });
@@ -75,9 +69,20 @@ export async function PATCH(
                 return NextResponse.json({ error: 'Supervisors cannot promote users' }, { status: 403 });
             }
 
+            // Check Employee ID uniqueness if changed
+            if (body.employeeId && body.employeeId !== targetUser.employeeId) {
+                const existing = await prisma.user.findUnique({
+                    where: { employeeId: body.employeeId }
+                });
+                if (existing) {
+                    return NextResponse.json({ error: 'Employee ID already exists' }, { status: 409 });
+                }
+            }
+
             const data: any = {};
             if (body.status) data.status = body.status;
             if (body.role) data.role = body.role;
+            if (body.hasOwnProperty('employeeId')) data.employeeId = body.employeeId || null;
 
             await prisma.user.update({
                 where: { id: targetUserId },

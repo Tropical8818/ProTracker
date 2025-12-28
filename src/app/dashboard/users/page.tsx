@@ -10,6 +10,7 @@ import {
 interface User {
     id: string;
     username: string;
+    employeeId: string | null;
     role: 'admin' | 'supervisor' | 'user' | 'kiosk';
     status: 'pending' | 'approved' | 'disabled';
     createdAt: string;
@@ -24,8 +25,13 @@ export default function UserManagementPage() {
 
     // Add User Form
     const [newUserUsername, setNewUserUsername] = useState('');
+    const [newUserEmployeeId, setNewUserEmployeeId] = useState('');
     const [newUserPassword, setNewUserPassword] = useState('');
     const [newUserRole, setNewUserRole] = useState('user');
+
+    // Edit User (Employee ID only for now)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editEmployeeId, setEditEmployeeId] = useState('');
 
     // Password Reset Form
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -82,6 +88,7 @@ export default function UserManagementPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     username: newUserUsername,
+                    employeeId: newUserEmployeeId,
                     password: newUserPassword,
                     role: newUserRole
                 })
@@ -92,6 +99,7 @@ export default function UserManagementPage() {
                 setUsers([data.user, ...users]);
                 setIsAddModalOpen(false);
                 setNewUserUsername('');
+                setNewUserEmployeeId('');
                 setNewUserPassword('');
                 setMsg({ type: 'success', text: `User ${data.user.username} created successfully` });
             } else {
@@ -124,7 +132,7 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleResetPassword = async (e: React.FormEvent) => {
+    const handleUpdateEmployeeId = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedUser) return;
 
@@ -133,19 +141,20 @@ export default function UserManagementPage() {
             const res = await fetch(`/api/users/${selectedUser.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password: resetPassword })
+                body: JSON.stringify({ employeeId: editEmployeeId })
             });
 
             if (res.ok) {
-                setIsPassModalOpen(false);
-                setResetPassword('');
-                setMsg({ type: 'success', text: 'Password updated successfully' });
+                setUsers(users.map(u => u.id === selectedUser.id ? { ...u, employeeId: editEmployeeId } : u));
+                setIsEditModalOpen(false);
+                setEditEmployeeId('');
+                setMsg({ type: 'success', text: 'Employee ID updated successfully' });
             } else {
                 const data = await res.json();
-                alert(data.error || 'Failed to reset password');
+                alert(data.error || 'Failed to update employee ID');
             }
         } catch {
-            alert('Error resetting password');
+            alert('Error updating employee ID');
         } finally {
             setActionLoading(false);
         }
@@ -215,6 +224,7 @@ export default function UserManagementPage() {
                         <thead className="bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th className="px-6 py-4 font-bold text-black">User</th>
+                                <th className="px-6 py-4 font-bold text-black">Employee ID</th>
                                 <th className="px-6 py-4 font-bold text-black">Role</th>
                                 <th className="px-6 py-4 font-bold text-black">Status</th>
                                 <th className="px-6 py-4 font-bold text-black">Created</th>
@@ -224,7 +234,12 @@ export default function UserManagementPage() {
                         <tbody className="divide-y divide-slate-100">
                             {users.map(user => (
                                 <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-6 py-4 font-medium text-black">{user.username}</td>
+                                    <td className="px-6 py-4">
+                                        <div className="font-medium text-black">{user.username}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-slate-500 font-mono text-xs">{user.employeeId || 'Not Set'}</div>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium
                                             ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
@@ -277,6 +292,14 @@ export default function UserManagementPage() {
                                         )}
 
                                         <button
+                                            onClick={() => { setSelectedUser(user); setEditEmployeeId(user.employeeId || ''); setIsEditModalOpen(true); }}
+                                            className="text-slate-400 hover:text-purple-600 p-1"
+                                            title="Edit Employee ID"
+                                        >
+                                            <UserCog className="w-4 h-4" />
+                                        </button>
+
+                                        <button
                                             onClick={() => { setSelectedUser(user); setIsPassModalOpen(true); }}
                                             className="text-slate-400 hover:text-blue-600 p-1"
                                             title="Reset Password"
@@ -320,8 +343,19 @@ export default function UserManagementPage() {
                                     type="text"
                                     value={newUserUsername}
                                     onChange={e => setNewUserUsername(e.target.value)}
+                                    placeholder="Real name or login name"
                                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-black font-medium"
                                     required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Employee ID (for AI Privacy)</label>
+                                <input
+                                    type="text"
+                                    value={newUserEmployeeId}
+                                    onChange={e => setNewUserEmployeeId(e.target.value)}
+                                    placeholder="e.g. EMP001"
+                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-black font-medium"
                                 />
                             </div>
                             <div>
@@ -369,13 +403,71 @@ export default function UserManagementPage() {
                 </div>
             )}
 
+            {/* Edit User Modal */}
+            {isEditModalOpen && selectedUser && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+                        <h2 className="text-xl font-bold mb-4">Edit User Info</h2>
+                        <p className="text-slate-500 mb-4">Updating <b>{selectedUser.username}</b></p>
+                        <form onSubmit={handleUpdateEmployeeId} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Employee ID</label>
+                                <input
+                                    type="text"
+                                    value={editEmployeeId}
+                                    onChange={e => setEditEmployeeId(e.target.value)}
+                                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-black font-medium"
+                                    placeholder="e.g. EMP001"
+                                />
+                                <p className="text-[10px] text-slate-400 mt-1">This ID will be used by AI to protect privacy.</p>
+                            </div>
+                            <div className="flex justify-end gap-2 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                    className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={actionLoading}
+                                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                                >
+                                    {actionLoading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Reset Password Modal */}
             {isPassModalOpen && selectedUser && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
                         <h2 className="text-xl font-bold mb-4">Reset Password</h2>
                         <p className="text-slate-500 mb-4">Set new password for <b>{selectedUser.username}</b></p>
-                        <form onSubmit={handleResetPassword} className="space-y-4">
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            setActionLoading(true);
+                            try {
+                                const res = await fetch(`/api/users/${selectedUser.id}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ password: resetPassword })
+                                });
+                                if (res.ok) {
+                                    setIsPassModalOpen(false);
+                                    setResetPassword('');
+                                    setMsg({ type: 'success', text: 'Password updated successfully' });
+                                } else {
+                                    const data = await res.json();
+                                    alert(data.error || 'Failed to reset password');
+                                }
+                            } catch { alert('Error resetting password'); }
+                            finally { setActionLoading(false); }
+                        }} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">New Password</label>
                                 <input

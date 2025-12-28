@@ -18,6 +18,7 @@ export async function GET() {
             select: {
                 id: true,
                 username: true,
+                employeeId: true,
                 role: true,
                 status: true,
                 createdAt: true,
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { username, password, role } = await request.json();
+        const { username, password, role, employeeId } = await request.json();
 
         // Validation
         if (!username || !password || !role) {
@@ -50,9 +51,20 @@ export async function POST(request: Request) {
         }
 
         // Check existence
-        const existing = await prisma.user.findUnique({ where: { username } });
+        const existing = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { employeeId: employeeId || undefined }
+                ]
+            }
+        });
+
         if (existing) {
-            return NextResponse.json({ error: 'Username already exists' }, { status: 409 });
+            if (existing.username === username) {
+                return NextResponse.json({ error: 'Username already exists' }, { status: 409 });
+            }
+            return NextResponse.json({ error: 'Employee ID already exists' }, { status: 409 });
         }
 
         const passwordHash = await bcrypt.hash(password, 10);
@@ -60,6 +72,7 @@ export async function POST(request: Request) {
         const newUser = await prisma.user.create({
             data: {
                 username,
+                employeeId: employeeId || null,
                 passwordHash,
                 role,
                 status: 'approved' // Manually created users are auto-approved
@@ -71,6 +84,7 @@ export async function POST(request: Request) {
             user: {
                 id: newUser.id,
                 username: newUser.username,
+                employeeId: newUser.employeeId,
                 role: newUser.role,
                 status: newUser.status
             }

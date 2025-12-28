@@ -189,7 +189,7 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
                 select: { woId: true }
             },
             user: {
-                select: { username: true }
+                select: { username: true, employeeId: true }
             }
         }
     });
@@ -201,7 +201,7 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
             woId: log.order?.woId || '',
             step: details.step || '',
             timestamp: log.timestamp.toISOString(),
-            userName: log.user?.username || 'System'
+            userName: log.user?.employeeId || log.user?.username || 'System'
         };
     });
 
@@ -284,11 +284,12 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
     }
     lines.push('');
 
-    lines.push('## Recent Operations & Employee Activity');
+    lines.push('## Recent Operations & Employee activity');
+    lines.push('NOTE: Performers are identified by their Anonymous Employee ID for privacy.');
     for (const log of context.recentLogs.slice(0, 20)) {
         const time = new Date(log.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        const user = log.userName;
-        lines.push(`- ${time} | ${user} updated ${log.woId}: ${log.step} → ${log.action}`);
+        const user = log.userName; // This is now employeeId or username
+        lines.push(`- ${time} | ID:${user} updated ${log.woId}: ${log.step} → ${log.action}`);
     }
 
     return lines.join('\n');
