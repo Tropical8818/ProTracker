@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getConfig, updateConfig } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,11 +24,23 @@ export async function GET() {
         });
 
         // Find active product or default to first
+        // Find active product or default to first
         const activeProduct = products.find(p => p.isActive) || products[0];
+
+        // Read global config from file
+        const globalConfig = getConfig();
 
         return NextResponse.json({
             products: formattedProducts,
-            activeProductId: activeProduct?.id
+            activeProductId: activeProduct?.id,
+            // Return global settings
+            aiProvider: globalConfig.aiProvider,
+            ollamaUrl: globalConfig.ollamaUrl,
+            ollamaModel: globalConfig.ollamaModel,
+            includeSaturday: globalConfig.includeSaturday,
+            includeSunday: globalConfig.includeSunday,
+            systemPrompt: globalConfig.systemPrompt,
+            rolePrompts: globalConfig.rolePrompts
         });
     } catch (error) {
         console.error('Config fetch error:', error);
@@ -48,6 +61,21 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
+        console.log('[APIConfig] Received Body:', JSON.stringify(body, null, 2));
+
+        // 1. Handle Global Config Updates (AI, etc.)
+        const globalUpdates: any = {};
+        if (body.aiProvider) globalUpdates.aiProvider = body.aiProvider;
+        if (body.ollamaUrl) globalUpdates.ollamaUrl = body.ollamaUrl;
+        if (body.ollamaModel) globalUpdates.ollamaModel = body.ollamaModel;
+        if (body.includeSaturday !== undefined) globalUpdates.includeSaturday = body.includeSaturday;
+        if (body.includeSunday !== undefined) globalUpdates.includeSunday = body.includeSunday;
+        if (body.systemPrompt !== undefined) globalUpdates.systemPrompt = body.systemPrompt;
+        if (body.rolePrompts !== undefined) globalUpdates.rolePrompts = body.rolePrompts;
+
+        if (Object.keys(globalUpdates).length > 0) {
+            updateConfig(globalUpdates);
+        }
 
         if (body.products) {
             const incomingIds = body.products.map((p: any) => p.id);
@@ -99,6 +127,8 @@ export async function POST(request: Request) {
                 where: { id: body.activeProductId },
                 data: { isActive: true }
             });
+            // Also update global config for redundancy if needed, but Prisma is source of truth for active product
+            updateConfig({ activeProductId: body.activeProductId });
         }
 
         return NextResponse.json({ success: true });

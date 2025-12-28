@@ -17,6 +17,7 @@ interface Product {
     includeSunday?: boolean;
     aiModel?: string;
     customInstructions?: string;
+    aiProvider?: 'openai' | 'ollama';
 }
 
 interface Config {
@@ -27,6 +28,11 @@ interface Config {
     ADMIN_PASSWORD?: string;
     includeSaturday?: boolean;
     includeSunday?: boolean;
+    aiProvider?: 'openai' | 'ollama';
+    ollamaUrl?: string;
+    ollamaModel?: string;
+    systemPrompt?: string;
+    rolePrompts?: Record<string, string>;
 }
 
 function PasswordInput({
@@ -112,6 +118,11 @@ export default function SettingsPage() {
     const [aiTestResult, setAiTestResult] = useState<{ status: 'idle' | 'testing' | 'success' | 'error'; message: string }>({ status: 'idle', message: '' });
     const [savingAiKey, setSavingAiKey] = useState(false);
 
+    // Split model lists
+    const [cloudModels, setCloudModels] = useState<{ id: string }[]>([]);
+    const [localModels, setLocalModels] = useState<{ id: string }[]>([]);
+    const [loadingModels, setLoadingModels] = useState(false);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -121,6 +132,8 @@ export default function SettingsPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setConfig(data);
+                    // Fetch both model lists initially
+                    fetchModels();
                 }
             } catch (err) {
                 console.error(err);
@@ -140,6 +153,34 @@ export default function SettingsPage() {
         fetchConfig();
         fetchUser();
     }, []);
+
+    const fetchModels = async (providerOverride?: string) => {
+        setLoadingModels(true);
+        try {
+            // Fetch OpenAI Models
+            if (!providerOverride || providerOverride === 'openai') {
+                const resCloud = await fetch('/api/ai/models?provider=openai');
+                if (resCloud.ok) {
+                    const data = await resCloud.json();
+                    setCloudModels(data.data || []);
+                }
+            }
+
+            // Fetch Ollama Models
+            if (!providerOverride || providerOverride === 'ollama') {
+                const resLocal = await fetch('/api/ai/models?provider=ollama');
+                if (resLocal.ok) {
+                    const data = await resLocal.json();
+                    setLocalModels(data.data || []);
+                }
+            }
+        } catch (e) {
+            console.error('Fetch models error:', e);
+        } finally {
+            setLoadingModels(false);
+        }
+    };
+
 
     const handleLogout = async () => {
         await fetch('/api/auth', { method: 'DELETE' });
@@ -334,7 +375,7 @@ export default function SettingsPage() {
                         <div className="bg-indigo-600 p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V5.0.0</span></h1>
+                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.0.0</span></h1>
                     </div>
 
                     <nav className="flex items-center gap-2">
@@ -574,27 +615,7 @@ export default function SettingsPage() {
                                                 )}
                                             </div>
 
-                                            {/* Monthly Target */}
-                                            <div className="mb-6">
-                                                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                                    Monthly Target (Goal)
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={editingProduct.monthlyTarget ?? ''}
-                                                    placeholder="100"
-                                                    onChange={(e) => {
-                                                        const val = parseInt(e.target.value);
-                                                        const updated = { ...editingProduct, monthlyTarget: isNaN(val) ? undefined : val };
-                                                        setEditingProduct(updated);
-                                                        updateProduct(updated);
-                                                    }}
-                                                    className="w-full md:w-32 px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 font-mono text-sm text-black font-medium shadow-sm"
-                                                />
-                                                <p className="text-xs text-slate-500 mt-1">
-                                                    Target quantity for the current month. Used for dashboard statistics.
-                                                </p>
-                                            </div>
+
 
 
 
@@ -604,24 +625,82 @@ export default function SettingsPage() {
                                                     AI Assistant Settings
                                                 </h4>
                                                 <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl border border-indigo-100">
-                                                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                                                        AI Model
+                                                    <label className="block text-sm font-medium text-slate-700 mb-1.5 flex justify-between">
+                                                        <span>AI Model</span>
+                                                        <button
+                                                            onClick={(e) => { e.preventDefault(); fetchModels(); }}
+                                                            className="text-indigo-600 text-xs hover:underline flex items-center gap-1"
+                                                        >
+                                                            <RefreshCw className={`w-3 h-3 ${loadingModels ? 'animate-spin' : ''}`} />
+                                                            Refresh List
+                                                        </button>
                                                     </label>
-                                                    <select
-                                                        value={editingProduct.aiModel || 'gpt-4o-mini'}
-                                                        onChange={(e) => {
-                                                            const updated = { ...editingProduct, aiModel: e.target.value };
-                                                            setEditingProduct(updated);
-                                                            updateProduct(updated);
-                                                        }}
-                                                        className="w-full px-4 py-2.5 border border-indigo-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 text-sm font-medium bg-white shadow-sm"
-                                                    >
-                                                        <option value="gpt-4o-mini">GPT-4o Mini (Default - Fast & Cheap)</option>
-                                                        <option value="gpt-4o">GPT-4o (Smartest - Higher Cost)</option>
-                                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Legacy)</option>
-                                                    </select>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        {/* Cloud Models */}
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <h5 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Cloud (OpenAI)</h5>
+                                                                <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{cloudModels.length}</span>
+                                                            </div>
+                                                            <div className="h-48 overflow-y-auto border border-slate-200 rounded-lg bg-white p-1 space-y-1">
+                                                                {cloudModels.length > 0 ? cloudModels.map(model => (
+                                                                    <button
+                                                                        key={model.id}
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            const updated = { ...editingProduct, aiModel: model.id, aiProvider: 'openai' as const };
+                                                                            setEditingProduct(updated);
+                                                                            updateProduct(updated);
+                                                                        }}
+                                                                        className={`w-full text-left px-3 py-2 text-xs rounded-md transition-all flex items-center justify-between ${editingProduct.aiModel === model.id && editingProduct.aiProvider !== 'ollama' // Default to openai if undefined
+                                                                            ? 'bg-indigo-50 text-indigo-700 font-medium ring-1 ring-indigo-200'
+                                                                            : 'text-slate-600 hover:bg-slate-50'
+                                                                            }`}
+                                                                    >
+                                                                        <span className="truncate">{model.id}</span>
+                                                                        {(editingProduct.aiModel === model.id && editingProduct.aiProvider !== 'ollama') && <Check className="w-3 h-3 text-indigo-600 flex-shrink-0 ml-2" />}
+                                                                    </button>
+                                                                )) : (
+                                                                    <div className="p-3 text-center text-xs text-slate-400 italic">No cloud models found</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Local Models */}
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <h5 className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Local (Ollama)</h5>
+                                                                <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-500">{localModels.length}</span>
+                                                            </div>
+                                                            <div className="h-48 overflow-y-auto border border-slate-200 rounded-lg bg-white p-1 space-y-1">
+                                                                {localModels.length > 0 ? localModels.map(model => (
+                                                                    <button
+                                                                        key={model.id}
+                                                                        onClick={(e) => {
+                                                                            e.preventDefault();
+                                                                            const updated = { ...editingProduct, aiModel: model.id, aiProvider: 'ollama' as const };
+                                                                            setEditingProduct(updated);
+                                                                            updateProduct(updated);
+                                                                        }}
+                                                                        className={`w-full text-left px-3 py-2 text-xs rounded-md transition-all flex items-center justify-between ${editingProduct.aiModel === model.id && editingProduct.aiProvider === 'ollama'
+                                                                            ? 'bg-purple-50 text-purple-700 font-medium ring-1 ring-purple-200'
+                                                                            : 'text-slate-600 hover:bg-slate-50'
+                                                                            }`}
+                                                                    >
+                                                                        <span className="truncate">{model.id}</span>
+                                                                        {editingProduct.aiModel === model.id && editingProduct.aiProvider === 'ollama' && <Check className="w-3 h-3 text-purple-600 flex-shrink-0 ml-2" />}
+                                                                    </button>
+                                                                )) : (
+                                                                    <div className="p-3 text-center text-xs text-slate-400 italic">No local models found</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <p className="text-xs text-slate-500 mt-2 mb-4">
-                                                        Select the model used for AI chat. &apos;GPT-4o Mini&apos; is recommended for most production tracking tasks.
+                                                        Select the model used for AI chat.
+                                                        {config.aiProvider === 'ollama'
+                                                            ? ' Selected from your local Ollama instance.'
+                                                            : ' Selected from available OpenAI models.'}
                                                     </p>
 
                                                     <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -795,25 +874,21 @@ export default function SettingsPage() {
                                         </div>
                                     )}
 
-                                    {/* Save Button */}
-                                    <div className="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between">
-                                        <div>
-                                            {message && (
-                                                <div className={`text-sm font-medium px-4 py-2 rounded-lg inline-block ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                                    {message.text}
-                                                </div>
-                                            )}
+
+                                    {message && (
+                                        <div className={`text-sm font-medium px-4 py-2 rounded-lg inline-block ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                            {message.text}
                                         </div>
-                                        <button
-                                            onClick={handleSave}
-                                            disabled={saving}
-                                            className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <Save className="w-4 h-4" />
-                                            {saving ? 'Saving...' : 'Save Settings'}
-                                        </button>
-                                    </div>
+                                    )}
                                 </div>
+                                <button
+                                    onClick={handleSave}
+                                    disabled={saving}
+                                    className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    {saving ? 'Saving...' : 'Save Settings'}
+                                </button>
                             </div>
                         )}
 
@@ -892,90 +967,170 @@ export default function SettingsPage() {
                                         <Sparkles className="w-5 h-5 text-purple-600" />
                                         AI Settings
                                     </h3>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-1">OpenAI API Key</label>
-                                            <div className="relative">
-                                                <input
-                                                    type={aiApiKeyVisible ? 'text' : 'password'}
-                                                    value={aiApiKey}
-                                                    onChange={(e) => setAiApiKey(e.target.value)}
-                                                    placeholder="sk-proj-..."
-                                                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 font-mono text-sm text-slate-800 pr-10"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setAiApiKeyVisible(!aiApiKeyVisible)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                                >
-                                                    {aiApiKeyVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                </button>
-                                            </div>
-                                            <p className="text-xs text-slate-500 mt-1">Required for AI chat features. Get your key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" className="text-purple-600 hover:underline">OpenAI</a>.</p>
+
+                                    <div className="space-y-6">
+                                        {/* Provider Toggle */}
+                                        <div className="flex bg-slate-100 p-1 rounded-lg">
+                                            <button
+                                                onClick={() => {
+                                                    const newConfig = { ...config, aiProvider: 'openai' as const };
+                                                    setConfig(newConfig);
+                                                    fetchModels('openai');
+                                                }}
+                                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${config.aiProvider === 'openai' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                OpenAI (Cloud)
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    const newConfig = { ...config, aiProvider: 'ollama' as const };
+                                                    setConfig(newConfig);
+                                                    fetchModels('ollama');
+                                                }}
+                                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${config.aiProvider === 'ollama' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            >
+                                                Ollama (Local)
+                                            </button>
                                         </div>
 
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={async () => {
-                                                    if (!aiApiKey.trim()) {
-                                                        setAiTestResult({ status: 'error', message: 'Please enter an API key' });
-                                                        return;
-                                                    }
-                                                    setAiTestResult({ status: 'testing', message: 'Testing connection...' });
-                                                    try {
-                                                        const res = await fetch('/api/ai/test', {
-                                                            method: 'POST',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                            body: JSON.stringify({ apiKey: aiApiKey })
-                                                        });
-                                                        const data = await res.json();
-                                                        if (res.ok) {
-                                                            setAiTestResult({ status: 'success', message: 'Connection successful!' });
-                                                        } else {
-                                                            setAiTestResult({ status: 'error', message: data.error || 'Test failed' });
-                                                        }
-                                                    } catch {
-                                                        setAiTestResult({ status: 'error', message: 'Connection failed' });
-                                                    }
-                                                }}
-                                                disabled={aiTestResult.status === 'testing'}
-                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 font-medium transition-colors disabled:opacity-50"
-                                            >
-                                                <Bot className="w-4 h-4" />
-                                                Test Connection
-                                            </button>
-                                            <button
-                                                onClick={async () => {
-                                                    if (!aiApiKey.trim()) {
-                                                        setAiTestResult({ status: 'error', message: 'Please enter an API key' });
-                                                        return;
-                                                    }
-                                                    setSavingAiKey(true);
-                                                    try {
-                                                        const res = await fetch('/api/ai/config', {
-                                                            method: 'POST',
-                                                            headers: { 'Content-Type': 'application/json' },
-                                                            body: JSON.stringify({ apiKey: aiApiKey })
-                                                        });
-                                                        if (res.ok) {
-                                                            setAiTestResult({ status: 'success', message: 'API key saved!' });
-                                                        } else {
-                                                            const data = await res.json();
-                                                            setAiTestResult({ status: 'error', message: data.error || 'Save failed' });
-                                                        }
-                                                    } catch {
-                                                        setAiTestResult({ status: 'error', message: 'Save failed' });
-                                                    } finally {
-                                                        setSavingAiKey(false);
-                                                    }
-                                                }}
-                                                disabled={savingAiKey}
-                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium transition-colors disabled:opacity-50"
-                                            >
-                                                <Save className="w-4 h-4" />
-                                                {savingAiKey ? 'Saving...' : 'Save Key'}
-                                            </button>
-                                        </div>
+                                        {config.aiProvider === 'ollama' ? (
+                                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-1">Ollama URL</label>
+                                                    <div className="flex gap-2">
+                                                        <input
+                                                            type="text"
+                                                            value={config.ollamaUrl || 'http://localhost:11434/v1'}
+                                                            onChange={(e) => setConfig({ ...config, ollamaUrl: e.target.value })}
+                                                            placeholder="http://localhost:11434/v1"
+                                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 font-mono text-sm text-slate-800"
+                                                        />
+                                                        <button
+                                                            onClick={() => fetchModels('ollama')}
+                                                            className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500"
+                                                            title="Test Connection & List Models"
+                                                        >
+                                                            <RefreshCw className={`w-4 h-4 ${loadingModels ? 'animate-spin' : ''}`} />
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 mt-1">
+                                                        Found {localModels.length} models.
+                                                        {localModels.length > 0 && (
+                                                            <span className="ml-1 text-green-600">Connection successful.</span>
+                                                        )}
+                                                    </p>
+                                                </div>
+
+                                                <div className="pt-2">
+                                                    <button
+                                                        onClick={async () => {
+                                                            setSavingAiKey(true);
+                                                            try {
+                                                                // Save config for Ollama
+                                                                const res = await fetch('/api/config', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({
+                                                                        aiProvider: 'ollama',
+                                                                        ollamaUrl: config.ollamaUrl
+                                                                        // model is now selected per product
+                                                                    })
+                                                                });
+                                                                if (res.ok) {
+                                                                    setAiTestResult({ status: 'success', message: 'Ollama settings saved!' });
+                                                                    fetchModels(); // Refresh after save
+                                                                } else {
+                                                                    setAiTestResult({ status: 'error', message: 'Failed to save settings' });
+                                                                }
+                                                            } catch (e) {
+                                                                setAiTestResult({ status: 'error', message: 'Error saving settings' });
+                                                            } finally {
+                                                                setSavingAiKey(false);
+                                                            }
+                                                        }}
+                                                        disabled={savingAiKey}
+                                                        className="w-full py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                                    >
+                                                        <Save className="w-4 h-4" />
+                                                        Save & Connect
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-slate-700 mb-1">OpenAI API Key</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type={aiApiKeyVisible ? 'text' : 'password'}
+                                                            value={aiApiKey}
+                                                            onChange={(e) => setAiApiKey(e.target.value)}
+                                                            placeholder="sk-proj-..."
+                                                            className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 font-mono text-sm text-slate-800 pr-10"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setAiApiKeyVisible(!aiApiKeyVisible)}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                                        >
+                                                            {aiApiKeyVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                        </button>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 mt-1">Required for AI chat. stored in env vars.</p>
+                                                </div>
+
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!aiApiKey.trim()) return setAiTestResult({ status: 'error', message: 'Enter API key' });
+                                                            setAiTestResult({ status: 'testing', message: 'Testing...' });
+                                                            try {
+                                                                const res = await fetch('/api/ai/test', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ apiKey: aiApiKey })
+                                                                });
+                                                                if (res.ok) setAiTestResult({ status: 'success', message: 'Connected!' });
+                                                                else setAiTestResult({ status: 'error', message: 'Test failed' });
+                                                            } catch { setAiTestResult({ status: 'error', message: 'Connection failed' }); }
+                                                        }}
+                                                        disabled={aiTestResult.status === 'testing'}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 font-medium transition-colors disabled:opacity-50 text-sm"
+                                                    >
+                                                        <Bot className="w-4 h-4" />
+                                                        Test
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!aiApiKey.trim()) return;
+                                                            setSavingAiKey(true);
+                                                            try {
+                                                                // Save Config for OpenAI Provider selection + Key
+                                                                await fetch('/api/config', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ aiProvider: 'openai' })
+                                                                });
+
+                                                                const res = await fetch('/api/ai/config', {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                    body: JSON.stringify({ apiKey: aiApiKey })
+                                                                });
+                                                                if (res.ok) setAiTestResult({ status: 'success', message: 'Key saved!' });
+                                                                else setAiTestResult({ status: 'error', message: 'Save failed' });
+                                                            } catch { setAiTestResult({ status: 'error', message: 'Save failed' }); }
+                                                            finally { setSavingAiKey(false); }
+                                                        }}
+                                                        disabled={savingAiKey}
+                                                        className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-500 font-medium transition-colors disabled:opacity-50 text-sm"
+                                                    >
+                                                        <Save className="w-4 h-4" />
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {aiTestResult.message && (
                                             <div className={`text-sm px-3 py-2 rounded-lg ${aiTestResult.status === 'success' ? 'bg-green-50 text-green-700' :
@@ -985,6 +1140,69 @@ export default function SettingsPage() {
                                                 {aiTestResult.message}
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* AI Prompt Engineering (Admin Only) */}
+                            {currentUser?.role === 'admin' && (
+                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 transition-all hover:shadow-md mb-6">
+                                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                                        <Sparkles className="w-5 h-5 text-purple-600" />
+                                        AI Prompt Engineering (Advanced)
+                                    </h3>
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 text-sm text-amber-800">
+                                        <strong>Caution:</strong> Modifying these prompts affects how the AI behaves for all users. Leave fields empty to use the system defaults (recommended).
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div>
+                                            <div className="flex justify-between items-center mb-1.5">
+                                                <label className="block text-sm font-medium text-slate-700">System Prompt (Global)</label>
+                                                <button
+                                                    onClick={() => setConfig({ ...config, systemPrompt: '' })}
+                                                    className="text-xs text-slate-400 hover:text-red-500"
+                                                >
+                                                    Reset to Default
+                                                </button>
+                                            </div>
+                                            <textarea
+                                                value={config.systemPrompt || ''}
+                                                onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
+                                                placeholder="Default system prompt..."
+                                                className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 font-mono text-sm h-32"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {['admin', 'supervisor', 'user'].map((role) => (
+                                                <div key={role}>
+                                                    <div className="flex justify-between items-center mb-1.5">
+                                                        <label className="block text-sm font-medium text-slate-700 capitalize">{role} Persona</label>
+                                                        <button
+                                                            onClick={() => {
+                                                                const newRolePrompts = { ...(config.rolePrompts || {}) };
+                                                                delete newRolePrompts[role];
+                                                                setConfig({ ...config, rolePrompts: newRolePrompts });
+                                                            }}
+                                                            className="text-xs text-slate-400 hover:text-red-500"
+                                                        >
+                                                            Default
+                                                        </button>
+                                                    </div>
+                                                    <textarea
+                                                        value={config.rolePrompts?.[role] || ''}
+                                                        onChange={(e) => {
+                                                            const newRolePrompts = { ...(config.rolePrompts || {}) };
+                                                            newRolePrompts[role] = e.target.value;
+                                                            setConfig({ ...config, rolePrompts: newRolePrompts });
+                                                        }}
+                                                        placeholder={`Default ${role} instructions...`}
+                                                        className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 font-mono text-xs h-32"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -1084,9 +1302,9 @@ export default function SettingsPage() {
 
 
                         </div>
-                    </div>
+                    </div >
                 )}
-            </main>
+            </main >
 
             {/* Column Categorization Modal */}
             {

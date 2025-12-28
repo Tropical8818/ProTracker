@@ -1,6 +1,6 @@
 # ProTracker User Manual
 
-**Version 5.0.0**
+**Version 6.0.0**
 
 ---
 
@@ -170,6 +170,18 @@ For supervisors and admins, batch operations allow updating multiple cells quick
 
 ---
 
+## Log Management
+
+### Operation Logs
+The system tracks every change made to orders. You can view these logs by clicking the **History** icon in the dashboard header.
+
+### Export & Clear (Admin/Supervisor)
+In the Operation Logs modal:
+1.  **Download CSV**: Click the green **CSV** button to download full logs for Excel analysis.
+2.  **Clear Logs**: (Admin Only) Click the red **Clear** button to permanently delete all history. This is useful when starting a new production cycle.
+
+---
+
 ## Importing Orders
 
 ### Excel Import (Admin/Supervisor)
@@ -185,17 +197,26 @@ For supervisors and admins, batch operations allow updating multiple cells quick
 
 ## AI Assistant
 
-ProTracker includes an AI-powered chat assistant to help you:
+ProTracker includes a smart, floating AI assistant to help you:
 
-- Analyze production data
-- Get insights on bottlenecks
-- Answer questions about orders
+- Analyze production risks and delays
+- Generate daily morning reports
+- Navigate automatically to specific orders
+- Answer questions about production status
 
 ### Using the AI
 
-1. Click the **AI Chat** button (sparkle icon)
-2. Type your question in natural language
-3. The AI will analyze your current orders and respond
+1. Click the **Chat Icon** 💬 (bottom right of screen)
+2. Type your question or use the **Quick Tools** (Admin/Supervisor only):
+    - **Analyze Risks**: Identify orders at risk of delay.
+    - **Morning Report**: Generate a summary for your daily standup.
+
+### Smart Navigation 🚀
+You can ask the AI to take you to an order:
+*   "Show me WO-1234"
+*   "Go to order 5555"
+
+**Result**: The system will automatically jump to the **Operation View** for that order.
 
 ### Example Questions
 
@@ -288,4 +309,4 @@ Navigate to **Settings → User Management** to:
 
 For technical support, contact your system administrator.
 
-**ProTracker v5.0.0** - AI-Powered Production Tracker
+**ProTracker v6.0.0** - AI-Powered Production Tracker

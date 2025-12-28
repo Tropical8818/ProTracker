@@ -68,3 +68,18 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    const session = await getSession();
+    if (!session || session.role !== 'admin') {
+        return NextResponse.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
+    }
+
+    try {
+        await prisma.operationLog.deleteMany({});
+        return NextResponse.json({ message: 'All logs cleared successfully' });
+    } catch (error) {
+        console.error('Clear Logs Error:', error);
+        return NextResponse.json({ error: 'Failed to clear logs' }, { status: 500 });
+    }
+}

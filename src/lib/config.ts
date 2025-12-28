@@ -15,6 +15,7 @@ export interface Product {
     stepDurations?: Record<string, number>; // Estimated duration for each step in hours
     monthlyTarget?: number; // Target quantity for the current month
     customInstructions?: string; // Custom instructions for AI to understand this product line
+    aiProvider?: 'openai' | 'ollama'; // AI Provider for this specific product
 }
 
 export interface Config {
@@ -25,6 +26,11 @@ export interface Config {
     ADMIN_PASSWORD: string;
     includeSaturday?: boolean; // Include Saturday in ECD calculation (default: false)
     includeSunday?: boolean;   // Include Sunday in ECD calculation (default: false)
+    aiProvider?: 'openai' | 'ollama';
+    ollamaUrl?: string;
+    ollamaModel?: string;
+    systemPrompt?: string;
+    rolePrompts?: Record<string, string>;
 }
 
 // Default steps for migration from v2
@@ -51,7 +57,10 @@ const DEFAULT_CONFIG: Config = {
     SUPERVISOR_PASSWORD: process.env.SUPERVISOR_PASSWORD || 'dhe-supervisor',
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'dhe-admin',
     includeSaturday: false, // Default: exclude Saturday
-    includeSunday: false    // Default: exclude Sunday
+    includeSunday: false,   // Default: exclude Sunday
+    aiProvider: 'openai',   // Default to OpenAI
+    ollamaUrl: 'http://localhost:11434/v1',
+    ollamaModel: 'llama3.1'
 };
 
 // Migrate from old config format (v2) to new format (v3)

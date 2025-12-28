@@ -1,6 +1,6 @@
 {
   "name": "protracker",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "description": "AI-Powered Production Tracker",
   "private": true,
   "scripts": {

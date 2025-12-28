@@ -34,6 +34,7 @@ export interface AIContext {
         customInstructions?: string;
     }[];
     activeModel?: string;
+    activeProvider?: 'openai' | 'ollama';
 }
 
 // Build context for AI from production data
@@ -60,12 +61,16 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
 
     // Determine active model from requested product or first product
     let activeModel = 'gpt-4o-mini';
+    let activeProvider: 'openai' | 'ollama' = 'openai';
+
     if (productId) {
         const p = productData.find(p => p.id === productId);
         if (p?.config.aiModel) activeModel = p.config.aiModel;
+        if (p?.config.aiProvider) activeProvider = p.config.aiProvider;
     } else if (productData.length > 0) {
         // Fallback to first product or some global setting
         if (productData[0].config.aiModel) activeModel = productData[0].config.aiModel;
+        if (productData[0].config.aiProvider) activeProvider = productData[0].config.aiProvider;
     }
 
     // Fetch orders - get more for better AI lookup
@@ -200,7 +205,8 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
         stats,
         recentLogs,
         products: productData,
-        activeModel
+        activeModel,
+        activeProvider
     };
 }
 
@@ -226,20 +232,25 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
     }
     lines.push('');
 
-    // Include ALL WO IDs for lookup
-    lines.push('## All Order WO IDs (for lookup)');
-    const woIds = context.orders.map(o => o.woId);
-    lines.push(woIds.join(', '));
+    // Include Active WO IDs for lookup (limit to active to save tokens)
+    lines.push('## Active Order WO IDs');
+    const activeWoIds = context.orders
+        .filter(o => ['Active', 'P', 'WIP', 'Hold', 'QN'].includes(o.status))
+        .map(o => o.woId);
+    lines.push(activeWoIds.join(', '));
     lines.push('');
 
     // List orders with special statuses (Hold, QN) - check from order status
     const holdOrders = context.orders.filter(o => o.status === 'Hold');
     const qnOrders = context.orders.filter(o => o.status === 'QN');
 
+    const listedWoIds = new Set<string>();
+
     if (holdOrders.length > 0) {
         lines.push('## ⚠️ Orders on HOLD');
         for (const order of holdOrders) {
             lines.push(`- ${order.woId} [${order.productName}]: Hold at step "${order.currentStep}"`);
+            listedWoIds.add(order.woId);
         }
         lines.push('');
     }
@@ -248,15 +259,23 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
         lines.push('## ⚠️ Orders with QN (Quality Notification)');
         for (const order of qnOrders) {
             lines.push(`- ${order.woId} [${order.productName}]: QN at step "${order.currentStep}"`);
+            listedWoIds.add(order.woId);
         }
         lines.push('');
     }
 
-    // Detailed info for recent/active orders
-    lines.push('## Order Details (Most Recent 50)');
-    for (const order of context.orders.slice(0, 50)) {
+    // Detailed info for recent/active orders (Pruned)
+    // Exclude ones we already listed in Hold/QN sections to avoid duplication
+    lines.push('## Recent Active Orders (Details)');
+    let count = 0;
+    for (const order of context.orders) {
+        if (count >= 20) break; // Limit to 20 detailed orders
+        if (listedWoIds.has(order.woId)) continue; // Skip if already listed
+        if (order.status === 'Completed') continue; // Skip completed for details (they are in stats)
+
         const ecdInfo = order.ecd ? `, ECD: ${order.ecd}` : '';
         lines.push(`- ${order.woId} [${order.productName}]: Step=${order.currentStep}, Status=${order.status}${ecdInfo}`);
+        count++;
     }
     lines.push('');
 

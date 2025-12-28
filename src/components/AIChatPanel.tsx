@@ -1,19 +1,23 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Loader2, Sparkles, AlertTriangle, Megaphone, CheckCircle2 } from 'lucide-react';
 
 interface Message {
     role: 'user' | 'assistant';
     content: string;
     timestamp: Date;
+    isAnalysis?: boolean;
+    data?: any;
 }
 
 interface AIChatPanelProps {
     productId?: string;
+    role?: string;
+    onNavigate?: (woId: string) => void;
 }
 
-export default function AIChatPanel({ productId }: AIChatPanelProps) {
+export default function AIChatPanel({ productId, role = 'user', onNavigate }: AIChatPanelProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -30,7 +34,7 @@ export default function AIChatPanel({ productId }: AIChatPanelProps) {
         if (isOpen && messages.length === 0) {
             setMessages([{
                 role: 'assistant',
-                content: '👋 Hello! I\'m the ProTracker AI Assistant.\n\nI can help you:\n• Check order status\n• Analyze production data\n• Identify potential issues\n\nTry asking: "How many orders completed today?" or "Which orders might be delayed?"',
+                content: '👋 Hello! I\'m the ProTracker AI Assistant.\n\nI can help you:\n• Check order status\n• Analyze production data\n• Identify potential issues\n\nTry the Advisor Tools below for deep analysis.',
                 timestamp: new Date()
             }]);
         }
@@ -69,9 +73,22 @@ export default function AIChatPanel({ productId }: AIChatPanelProps) {
                 throw new Error(data.error);
             }
 
+            let responseText = data.response;
+
+            // Check for navigation command
+            if (responseText && onNavigate) {
+                const navMatch = responseText.match(/\[NAVIGATE:(.*?)\]/);
+                if (navMatch) {
+                    const woId = navMatch[1];
+                    onNavigate(woId);
+                    // Remove tag from display
+                    responseText = responseText.replace(/\[NAVIGATE:.*?\]/, '').trim();
+                }
+            }
+
             const assistantMessage: Message = {
                 role: 'assistant',
-                content: data.response || 'Sorry, I could not process this request.',
+                content: responseText || 'Sorry, I could not process this request.',
                 timestamp: new Date()
             };
 
@@ -88,20 +105,71 @@ export default function AIChatPanel({ productId }: AIChatPanelProps) {
         }
     };
 
+    const runTool = async (mode: 'analysis' | 'report') => {
+        if (isLoading) return;
+        setIsLoading(true);
+
+        // Add a system-like message indicating tool usage
+        setMessages(prev => [...prev, {
+            role: 'user',
+            content: mode === 'analysis' ? '🔍 Running Risk Analysis...' : '📋 Generating Morning Report...',
+            timestamp: new Date()
+        }]);
+
+        try {
+            const res = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    productId,
+                    mode: mode
+                })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                let content = data.response;
+                let isAnalysis = false;
+                let parsedRx = null;
+
+                if (mode === 'analysis' && typeof content === 'string') {
+                    try {
+                        const cleanJson = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                        parsedRx = JSON.parse(cleanJson);
+                        isAnalysis = true;
+                    } catch (e) {
+                        // Fallback if not JSON
+                    }
+                }
+
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: isAnalysis ? 'Here is the risk analysis:' : content,
+                    timestamp: new Date(),
+                    isAnalysis,
+                    data: parsedRx
+                }]);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            console.error('Tool error:', error);
+            setMessages(prev => [...prev, {
+                role: 'assistant',
+                content: '❌ Tool execution failed.',
+                timestamp: new Date()
+            }]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
     };
-
-    // Quick suggestions
-    const suggestions = [
-        'How many orders today?',
-        'Which orders might delay?',
-        'Current production status?',
-        'Any anomalies?'
-    ];
 
     return (
         <>
@@ -150,12 +218,32 @@ export default function AIChatPanel({ productId }: AIChatPanelProps) {
                                     </div>
                                 )}
                                 <div
-                                    className={`max-w-[80%] p-3 rounded-2xl ${msg.role === 'user'
+                                    className={`max-w-[85%] p-3 rounded-2xl ${msg.role === 'user'
                                         ? 'bg-indigo-600 text-white rounded-br-md'
                                         : 'bg-white text-slate-800 shadow-sm border border-slate-100 rounded-bl-md'
                                         }`}
                                 >
-                                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    {msg.isAnalysis && msg.data?.risks ? (
+                                        <div className="space-y-2">
+                                            <p className="font-semibold text-xs text-slate-500 uppercase mb-2">Risk Analysis Report</p>
+                                            {msg.data.risks.length === 0 ? (
+                                                <p className="text-green-600 flex items-center gap-2 text-sm"><CheckCircle2 className="w-4 h-4" /> No high risks detected.</p>
+                                            ) : (
+                                                msg.data.risks.map((risk: any, i: number) => (
+                                                    <div key={i} className="flex gap-2 text-xs p-2 bg-red-50 rounded border border-red-100">
+                                                        <div className="mt-0.5"><AlertTriangle className="w-3 h-3 text-red-600" /></div>
+                                                        <div>
+                                                            <div className="font-bold text-red-900">{risk.woId}</div>
+                                                            <div className="text-red-700">{risk.reason}</div>
+                                                            <div className="mt-1 text-slate-600 bg-white px-1.5 py-0.5 rounded border border-red-100 inline-block">💡 {risk.strategy}</div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                                    )}
                                 </div>
                                 {msg.role === 'user' && (
                                     <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center flex-shrink-0">
@@ -179,20 +267,25 @@ export default function AIChatPanel({ productId }: AIChatPanelProps) {
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Quick Suggestions */}
-                    {messages.length <= 1 && (
-                        <div className="px-4 py-2 bg-white border-t border-slate-100 flex flex-wrap gap-2">
-                            {suggestions.map((suggestion, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => {
-                                        setInput(suggestion);
-                                    }}
-                                    className="px-3 py-1.5 text-xs bg-slate-100 text-slate-600 rounded-full hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
-                                >
-                                    {suggestion}
-                                </button>
-                            ))}
+                    {/* Advisor Tools (Only for Admin/Supervisor) */}
+                    {(role === 'admin' || role === 'supervisor') && (
+                        <div className="px-4 py-3 bg-white border-t border-slate-100 grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => runTool('analysis')}
+                                disabled={isLoading}
+                                className="flex items-center justify-center gap-2 px-3 py-2 bg-orange-50 text-orange-700 rounded-lg text-xs font-medium hover:bg-orange-100 transition-colors border border-orange-100"
+                            >
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                Analyze Risks
+                            </button>
+                            <button
+                                onClick={() => runTool('report')}
+                                disabled={isLoading}
+                                className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors border border-blue-100"
+                            >
+                                <Megaphone className="w-3.5 h-3.5" />
+                                Morning Report
+                            </button>
                         </div>
                     )}
 
@@ -204,7 +297,7 @@ export default function AIChatPanel({ productId }: AIChatPanelProps) {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyPress={handleKeyPress}
-                                placeholder="Ask me anything..."
+                                placeholder="Ask about production..."
                                 className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-200 text-slate-800 text-sm"
                                 disabled={isLoading}
                             />

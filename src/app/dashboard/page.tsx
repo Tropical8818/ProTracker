@@ -8,7 +8,8 @@ import {
     Maximize, Minimize, Activity, AlertCircle, ScanBarcode, ArrowRight,
     Play, Ban, PauseCircle, Eraser, Info, HardHat, Upload, Users,
     Factory, ChevronDown, Table2, Pencil, Eye, EyeOff, ClipboardList,
-    RefreshCw, X, FileSpreadsheet, Check, Clock, CheckCircle2, Layers, AlertTriangle
+    RefreshCw, X, FileSpreadsheet, Check, Clock, CheckCircle2, Layers, AlertTriangle, Sparkles, Megaphone,
+    History, Loader2, Download, Trash2
 } from 'lucide-react';
 import PlannerTable from '@/components/PlannerTable';
 import MobilePlannerCards from '@/components/MobilePlannerCards';
@@ -104,9 +105,51 @@ export default function DashboardPage() {
     const [showImportModal, setShowImportModal] = useState(false);
     const [importMsg, setImportMsg] = useState<{ type: string, text: string } | null>(null);
 
+
+
+    // Monthly Target Edit State
+    const [editingTarget, setEditingTarget] = useState(false);
+    const [tempTarget, setTempTarget] = useState<string>('');
+    const [savingTarget, setSavingTarget] = useState(false);
+
     const router = useRouter();
 
     const selectedProduct = products.find(p => p.id === selectedProductId);
+
+
+
+
+
+    const saveTarget = async () => {
+        if (!selectedProductId || !tempTarget) return;
+        setSavingTarget(true);
+        try {
+            const res = await fetch(`/api/products/${selectedProductId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ monthlyTarget: Number(tempTarget) })
+            });
+
+            if (res.ok) {
+                // Update local state to reflect change immediately
+                const updatedProducts = products.map(p =>
+                    p.id === selectedProductId
+                        ? { ...p, monthlyTarget: Number(tempTarget) }
+                        : p
+                );
+                setProducts(updatedProducts);
+                setEditingTarget(false);
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to update target');
+            }
+        } catch (error) {
+            console.error('Save target error:', error);
+            alert('Failed to save target');
+        } finally {
+            setSavingTarget(false);
+        }
+    };
 
     const handleSetP = async (woId: string, step: string, currentValue: string) => {
         try {
@@ -407,11 +450,10 @@ export default function DashboardPage() {
         }
     };
 
-    const openLogsModal = async () => {
-        setShowLogsModal(true);
+    const fetchLogs = async () => {
         setLoadingLogs(true);
         try {
-            const res = await fetch(`/api/logs?limit=30&productId=${selectedProductId}`);
+            const res = await fetch(`/api/logs?limit=100&productId=${selectedProductId}`);
             if (res.ok) {
                 const data = await res.json();
                 setLogs(data.logs || []);
@@ -420,6 +462,53 @@ export default function DashboardPage() {
             console.error('Failed to fetch logs:', err);
         } finally {
             setLoadingLogs(false);
+        }
+    };
+
+    const openLogsModal = () => {
+        setShowLogsModal(true);
+        fetchLogs();
+    };
+
+    const downloadLogsCSV = () => {
+        if (!logs.length) return;
+        const headers = ['Time', 'Operator', 'WO ID', 'Step', 'Action', 'Previous', 'New Value'];
+        const csvContent = [
+            headers.join(','),
+            ...logs.map(log => [
+                new Date(log.timestamp).toISOString(),
+                log.operatorId,
+                log.woId,
+                `"${log.step?.replace(/"/g, '""') || ''}"`,
+                log.action,
+                `"${log.previousValue?.replace(/"/g, '""') || ''}"`,
+                `"${log.newValue?.replace(/"/g, '""') || ''}"`
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', `operation_logs_${format(new Date(), 'yyyyMMdd_HHmm')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const clearLogs = async () => {
+        if (!confirm('Are you sure you want to clear ALL logs? This cannot be undone.')) return;
+        try {
+            const res = await fetch('/api/logs', { method: 'DELETE' });
+            if (res.ok) {
+                alert('Logs cleared successfully');
+                fetchLogs();
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to clear logs');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Failed to clear logs');
         }
     };
 
@@ -532,7 +621,7 @@ export default function DashboardPage() {
                         <div className="bg-indigo-600 p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V5.0.0</span></h1>
+                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.0.0</span></h1>
                         <div className="hidden sm:block text-sm text-slate-500 border-l border-slate-200 pl-3">
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                         </div>
@@ -804,7 +893,7 @@ export default function DashboardPage() {
                                 <div className="absolute top-full right-0 mt-2 w-auto min-w-[120px] bg-[#4e80ff] text-white text-[10px] p-3 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                                     <div className="font-bold text-xs mb-1 whitespace-nowrap">ProTracker</div>
                                     <div className="space-y-0.5 text-slate-300">
-                                        <div className="flex justify-between gap-3"><span>Version:</span> <span>5.0.0</span></div>
+                                        <div className="flex justify-between gap-3"><span>Version:</span> <span>6.0.0</span></div>
                                         <div className="flex justify-between gap-3"><span>Developer:</span> <span>Eric</span></div>
                                         <div className="flex justify-between gap-3"><span>License:</span> <span>MIT</span></div>
                                     </div>
@@ -925,10 +1014,42 @@ export default function DashboardPage() {
                                         const target = (products.find(p => p.id === selectedProductId))?.monthlyTarget || 100;
                                         const percentage = Math.round((completed / target) * 100);
 
+                                        if (editingTarget) {
+                                            return (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xl font-bold text-slate-900">{completed}</span>
+                                                    <span className="text-sm text-slate-400">/</span>
+                                                    <input
+                                                        type="number"
+                                                        value={tempTarget}
+                                                        onChange={(e) => setTempTarget(e.target.value)}
+                                                        className="w-20 px-2 py-1 text-sm border border-blue-300 rounded focus:ring-2 focus:ring-blue-200 outline-none"
+                                                        autoFocus
+                                                        onKeyDown={(e) => e.key === 'Enter' && saveTarget()}
+                                                    />
+                                                    <div className="flex gap-1">
+                                                        <button onClick={saveTarget} disabled={savingTarget} className="p-1 hover:bg-green-100 rounded text-green-600"><Check className="w-4 h-4" /></button>
+                                                        <button onClick={() => setEditingTarget(false)} className="p-1 hover:bg-red-100 rounded text-red-500"><X className="w-4 h-4" /></button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
                                         return (
                                             <div className="flex items-baseline gap-2">
                                                 <span>{completed}</span>
-                                                <span className="text-xs font-normal text-slate-500">/ {target}</span>
+                                                <span
+                                                    className={`text-xs font-normal text-slate-500 ${(role === 'admin' || role === 'supervisor') ? 'cursor-pointer hover:text-blue-600 hover:bg-blue-100 px-1 rounded transition-colors' : ''}`}
+                                                    title={(role === 'admin' || role === 'supervisor') ? "Click to edit target" : ""}
+                                                    onClick={() => {
+                                                        if (role === 'admin' || role === 'supervisor') {
+                                                            setTempTarget(target.toString());
+                                                            setEditingTarget(true);
+                                                        }
+                                                    }}
+                                                >
+                                                    / {target}
+                                                </span>
                                                 <span className={`text-xs ml-1 ${percentage >= 100 ? 'text-green-600' : 'text-slate-400'}`}>({percentage}%)</span>
                                             </div>
                                         );
@@ -936,6 +1057,9 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                         </div>
+
+
+
 
                         {(() => {
                             // Use selectedProduct defined at component level or find it safely
@@ -1221,59 +1345,95 @@ export default function DashboardPage() {
 
             {/* Operation Logs Modal */}
             {showLogsModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[80vh] overflow-hidden flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-slate-900">Operation Logs</h3>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-6 max-w-5xl w-full mx-4 shadow-xl max-h-[85vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                <History className="w-6 h-6 text-indigo-600" />
+                                Operation Logs
+                            </h3>
                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={downloadLogsCSV}
+                                    title="Download CSV"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    CSV
+                                </button>
 
-                                <button onClick={() => setShowLogsModal(false)} className="p-1 text-slate-400 hover:text-slate-600">
-                                    <X className="w-5 h-5" />
+                                {role === 'admin' && (
+                                    <button
+                                        onClick={clearLogs}
+                                        title="Clear All Logs"
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        Clear
+                                    </button>
+                                )}
+
+                                <div className="w-px h-6 bg-slate-200 mx-1"></div>
+
+                                <button onClick={() => setShowLogsModal(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                                    <X className="w-6 h-6" />
                                 </button>
                             </div>
                         </div>
 
                         {loadingLogs ? (
-                            <div className="py-10 text-center text-slate-400">Loading...</div>
+                            <div className="py-20 text-center text-slate-400 flex flex-col items-center gap-3">
+                                <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+                                <span>Loading history...</span>
+                            </div>
                         ) : logs.length === 0 ? (
-                            <div className="py-10 text-center text-slate-400">No operation logs yet</div>
+                            <div className="py-20 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                No operation logs found
+                            </div>
                         ) : (
-                            <div className="flex-1 overflow-y-auto">
-                                <table className="w-full text-xs">
-                                    <thead className="bg-slate-100 sticky top-0">
+                            <div className="flex-1 overflow-y-auto border border-slate-200 rounded-lg shadow-sm">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
                                         <tr>
-                                            <th className="px-2 py-1 text-left">Time</th>
-                                            <th className="px-2 py-1 text-left">Operator</th>
-                                            <th className="px-2 py-1 text-left">WO ID</th>
-                                            <th className="px-2 py-1 text-left">Step</th>
-                                            <th className="px-2 py-1 text-left">Action</th>
-                                            <th className="px-2 py-1 text-left">Change</th>
+                                            <th className="px-4 py-3 text-left font-semibold text-slate-700 border-b border-slate-200">Time</th>
+                                            <th className="px-4 py-3 text-left font-semibold text-slate-700 border-b border-slate-200">Operator</th>
+                                            <th className="px-4 py-3 text-left font-semibold text-slate-700 border-b border-slate-200">WO ID</th>
+                                            <th className="px-4 py-3 text-left font-semibold text-slate-700 border-b border-slate-200">Step</th>
+                                            <th className="px-4 py-3 text-left font-semibold text-slate-700 border-b border-slate-200">Action</th>
+                                            <th className="px-4 py-3 text-left font-semibold text-slate-700 border-b border-slate-200">Change</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="divide-y divide-slate-100 bg-white">
                                         {logs.map(log => (
-                                            <tr key={log.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                                <td className="px-2 py-1 whitespace-nowrap text-slate-500">
+                                            <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="px-4 py-3 whitespace-nowrap text-slate-500 font-mono text-xs">
                                                     {new Date(log.timestamp).toLocaleString('en-US', {
                                                         month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                                                     })}
                                                 </td>
-                                                <td className="px-2 py-1 font-medium text-indigo-600">{log.operatorId}</td>
-                                                <td className="px-2 py-1">{log.woId}</td>
-                                                <td className="px-2 py-1 truncate max-w-[100px]" title={log.step}>{log.step}</td>
-                                                <td className="px-2 py-1">
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${log.action === 'Done' ? 'bg-green-100 text-green-700' :
-                                                        log.action === 'WIP' ? 'bg-yellow-100 text-yellow-700' :
-                                                            log.action === 'P' ? 'bg-blue-100 text-blue-700' :
-                                                                log.action === 'Reset' ? 'bg-slate-100 text-slate-600' :
-                                                                    'bg-slate-100 text-slate-600'
+                                                <td className="px-4 py-3 font-medium text-indigo-600">{log.operatorId}</td>
+                                                <td className="px-4 py-3 font-medium text-slate-900">{log.woId}</td>
+                                                <td className="px-4 py-3 truncate max-w-[150px] text-slate-600" title={log.step}>{log.step}</td>
+                                                <td className="px-4 py-3">
+                                                    <span className={`px-2 py-1 rounded-md text-xs font-semibold border ${log.action === 'Done' ? 'bg-green-50 text-green-700 border-green-100' :
+                                                        log.action === 'WIP' ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                                                            log.action === 'P' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                                log.action === 'Reset' ? 'bg-slate-100 text-slate-600 border-slate-200' :
+                                                                    'bg-slate-50 text-slate-600 border-slate-100'
                                                         }`}>
                                                         {log.action}
                                                     </span>
                                                 </td>
-                                                <td className="px-2 py-1 text-slate-500">
-                                                    {log.previousValue ? `${log.previousValue} → ` : ''}
-                                                    <span className="text-slate-800">{log.newValue || '-'}</span>
+                                                <td className="px-4 py-3 text-slate-600 text-sm">
+                                                    {log.previousValue ? (
+                                                        <span className="flex items-center gap-1.5 flex-wrap">
+                                                            <span className="line-through text-slate-400 text-xs">{log.previousValue}</span>
+                                                            <ArrowRight className="w-3 h-3 text-slate-400" />
+                                                            <span className="font-medium text-slate-900">{log.newValue || '-'}</span>
+                                                        </span>
+                                                    ) : (
+                                                        <span className="font-medium text-slate-900">{log.newValue || '-'}</span>
+                                                    )}
                                                 </td>
                                             </tr>
                                         ))}
@@ -1466,7 +1626,16 @@ export default function DashboardPage() {
                 </div>
             )}
             {/* AI Chat Panel */}
-            <AIChatPanel productId={selectedProductId} />
+            <AIChatPanel
+                productId={selectedProductId}
+                role={role}
+                onNavigate={(woId) => {
+                    // Navigate to operation view for this order
+                    if (selectedProductId) {
+                        router.push(`/dashboard/operation?wo=${woId}&product=${selectedProductId}`);
+                    }
+                }}
+            />
         </div>
     );
 }
