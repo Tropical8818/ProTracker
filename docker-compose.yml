@@ -2,22 +2,21 @@ version: '3.8'
 
 services:
   app:
-    container_name: protracker
+    container_name: protracker-v6
     build:
       context: .
       dockerfile: Dockerfile
     restart: always
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=file:/app/prisma/dev.db
-      # Add your OpenAI Key here or in a .env file next to this compose file
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - NODE_ENV=production
     volumes:
-      # Persist the database and other prisma files
+      # Persist the database file
       - ./prisma:/app/prisma
-      # Optional: Persist uploaded files if you implement local file storage later
-      # - ./uploads:/app/uploads
     networks:
       - tracker-network
 

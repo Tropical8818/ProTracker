@@ -1,14 +1,22 @@
-# Production Deployment Guide
+# Production Deployment Guide (V6.1.0)
 
-This guide covers two methods to deploy **Production Tracker V5**:
+This guide covers two methods to deploy **ProTracker V6.1.0**:
 1. **Standard Node.js Deployment** (Recommended for Mac Mini servers or simple VPS).
-2. **Docker Deployment** (Recommended for Linux servers or containerized environments).
+2. **Docker Deployment** (Recommended for Linux servers or trial runs).
+
+---
+
+## What's New in V6.1.0
+- **Professional Kiosk Mode**: Specialized monitor view with auto-scroll.
+- **Enhanced Security**: Role-based access control and password-protected Kiosk unlock.
+- **30-Day Sessions**: Extended persistence for Kiosk terminals.
+- **Display Density**: Compact/Comfortable view toggle.
 
 ---
 
 ## Prerequisites
 - **Node.js**: Version 20.9.0 or later (for Standard Deployment).
-- **Docker**: If using the Docker method.
+- **Docker & Docker Compose**: For containerized deployment.
 - **OpenAI API Key**: Required for AI features.
 
 ---
@@ -97,29 +105,28 @@ docker run -d \
 
 ---
 
-## Method 3: Docker Compose (Recommended for Production)
+## Method 3: Docker Compose (Recommended for Trial & Production)
 
-This method simplifies management using the provided `docker-compose.yml`.
+This is the fastest way to get V6.1.0 running.
 
-### 1. Configure Environment
-Create a `.env` file in the same directory as `docker-compose.yml`:
-
+### 1. Prepare Environment
+Ensure your `.env` file has the necessary keys:
 ```env
 OPENAI_API_KEY=sk-your-openai-key-here
+# DATABASE_URL is handled automatically by compose
 ```
 
-### 2. Start the Service
-Run the following command to build and start the container in the background:
+### 2. Launch Trial Run
+Run this command to build and start everything. Our new bootstrap script will automatically handle database setup.
 
 ```bash
 docker-compose up -d --build
 ```
 
-### 3. Management Commands
+### 3. Management
+- **View Logs**: `docker-compose logs -f app` (Check here if you see errors)
 - **Stop**: `docker-compose down`
-- **View Logs**: `docker-compose logs -f`
-- **Restart**: `docker-compose restart`
-- **Update**: Pull code, then run `docker-compose up -d --build`
+- **Reset Database**: Delete `prisma/dev.db` and restart.
 
 ---
 

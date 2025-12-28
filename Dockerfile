@@ -38,10 +38,14 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma schema and migrations for runtime usage (e.g. migrations)
+# Copy Prisma schema and migrations for runtime usage
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/package.json ./package.json
 
-# Set correct permission for nextjs user
+# Copy bootstrap script
+COPY scripts/docker-bootstrap.sh ./scripts/docker-bootstrap.sh
+USER root
+RUN chmod +x ./scripts/docker-bootstrap.sh
 USER nextjs
 
 EXPOSE 3000
@@ -49,6 +53,5 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# Main command - ensure database migration happens if needed, or just start
-# Note: For SQLite in Docker, simpler to run migration on startup or manual
-CMD ["node", "server.js"]
+# Use the bootstrap script to handle database setup before starting
+CMD ["./scripts/docker-bootstrap.sh"]
