@@ -39,6 +39,7 @@ export default function KioskPage() {
     const [unlockPin, setUnlockPin] = useState('');
     const [pinError, setPinError] = useState(false);
     const [role, setRole] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [viewDensity, setViewDensity] = useState<'comfortable' | 'compact'>('comfortable');
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -74,6 +75,7 @@ export default function KioskPage() {
                 const authData = await authRes.json();
                 if (authData.authenticated) {
                     setRole(authData.role);
+                    setUsername(authData.username);
                 }
             }
 
@@ -537,7 +539,9 @@ export default function KioskPage() {
                         </div>
 
                         <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Console Secure</h2>
-                        <p className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-8">Enter Account Password to Unlock</p>
+                        <p className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-8">
+                            Enter Password for <span className="text-indigo-400">{username}</span> to Unlock
+                        </p>
 
                         <div className="space-y-6">
                             <input
