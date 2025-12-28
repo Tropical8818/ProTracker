@@ -26,6 +26,7 @@ export interface AIContext {
         woId: string;
         step: string;
         timestamp: string;
+        userName: string;
     }[];
     products: {
         id: string;
@@ -181,11 +182,14 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
 
     // Fetch recent logs
     const logs = await prisma.operationLog.findMany({
-        take: 20,
+        take: 30, // Increased log count for better activity analysis
         orderBy: { timestamp: 'desc' },
         include: {
             order: {
                 select: { woId: true }
+            },
+            user: {
+                select: { username: true }
             }
         }
     });
@@ -196,7 +200,8 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
             action: log.action,
             woId: log.order?.woId || '',
             step: details.step || '',
-            timestamp: log.timestamp.toISOString()
+            timestamp: log.timestamp.toISOString(),
+            userName: log.user?.username || 'System'
         };
     });
 
@@ -279,10 +284,11 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
     }
     lines.push('');
 
-    lines.push('## Recent Operations');
-    for (const log of context.recentLogs.slice(0, 10)) {
+    lines.push('## Recent Operations & Employee Activity');
+    for (const log of context.recentLogs.slice(0, 20)) {
         const time = new Date(log.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        lines.push(`- ${time} ${log.woId}: ${log.step} → ${log.action}`);
+        const user = log.userName;
+        lines.push(`- ${time} | ${user} updated ${log.woId}: ${log.step} → ${log.action}`);
     }
 
     return lines.join('\n');
