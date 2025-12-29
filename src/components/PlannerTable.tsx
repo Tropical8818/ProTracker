@@ -320,19 +320,27 @@ export default function PlannerTable({
         const woIdWidthStr = `${woIdWidthVal}px`;
 
         // FIXED widths for detail columns - minimal to maximize step space
-        effectiveDetailColumns.forEach((col) => {
-            if (col === 'WO ID') {
+        // FIXED widths for detail columns - minimal to maximize step space
+        effectiveDetailColumns.forEach((col, index) => {
+            // 1st Column (WO ID)
+            if (index === 0) {
                 widths[col] = woIdWidthStr;
-            } else if (col === 'PN') {
+            }
+            // 3rd & 4th Columns (Description/Remarks or whatever is there)
+            // User requested: "3 and 4 cols are 1.5x of 1st"
+            else if (index === 2 || index === 3) {
+                const widthVal = Math.floor(woIdWidthVal * 1.5);
+                widths[col] = `${widthVal}px`;
+            }
+            // 2nd Column (usually PN)
+            else if (index === 1) {
                 // PN: Dynamic, min 60px, max 120px
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
                 const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
-            } else if (col === 'Description' || col === 'Remarks') {
-                // Description and Remarks: 1.5x of WO ID width (Requested: "3rd & 4th cols are 1.5x of 1st")
-                const widthVal = Math.floor(woIdWidthVal * 1.5);
-                widths[col] = `${widthVal}px`;
-            } else {
+            }
+            // Others
+            else {
                 // Other columns (5, 6, 7...) - Compact dynamic
                 // Min 30px, Max 60px - just enough to see content
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
