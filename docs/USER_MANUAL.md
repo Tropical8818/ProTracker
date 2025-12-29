@@ -1,6 +1,6 @@
 # ProTracker User Manual
 
-**Version 6.1.3**
+**Version 6.3.0**
 
 ---
 
@@ -26,6 +26,7 @@
    - [WIP Mode](#wip-mode)
    - [Complete Mode](#complete-mode)
    - [Erase Mode](#erase-mode)
+   - [Super Edit Mode](#super-edit-mode)
 6. [Importing Orders](#importing-orders)
 7. [AI Assistant](#ai-assistant)
 8. [Settings](#settings)
@@ -90,6 +91,7 @@ After logging in, you'll see the main dashboard with all your orders.
 
 - Click the **product dropdown** in the header to switch between product lines
 - Each product line has its own orders, steps, and configuration
+- **Column Resizing**: Drag the edges of column headers to adjust width. Settings are saved automatically.
 
 ### Order Table
 
@@ -99,7 +101,7 @@ The main table shows all work orders with:
 - **Step Columns**: Production steps (e.g., Cutting, Assembly, QC)
 - **Status Indicators**:
   - 📘 **P** = Planned/Pending
-  - ⬜ **N/A** = Not Applicable
+  - ⬜ **N/A** = Not Applicable (Considred 'Completed' if in the final step)
   - 🟠 **Hold** = On Hold
   - 🔴 **QN** = Quality Notification (issue)
   - 🟡 **WIP** = Work In Progress
@@ -190,6 +192,19 @@ For supervisors and admins, batch operations allow updating multiple cells quick
 - **Admin only** or requires password for supervisors
 - Clears any status from a cell
 - Use with caution!
+
+### Super Edit Mode
+
+*(New in V6.3.0 - Admin/Supervisor Only)*
+
+- **Function**: Directly modify order detail columns (WO ID, PN, Description, etc.) without re-importing Excel.
+- **How to use**:
+    1. Click the **Lock Icon** 🔒 in the top-left WO ID cell.
+    2. The icon unlocks 🔓 and table borders change color to indicate edit mode.
+    3. Click any detail cell (WO ID, PN, Priority, Due Date) to edit.
+    4. Type new value and press Enter. Changes are saved immediately.
+- **Restriction**: **ECD** column is auto-calculated and cannot be edited.
+- **Note**: Changes are instant. Please use with caution.
 
 ---
 
@@ -333,4 +348,4 @@ Navigate to **Settings → User Management** to:
 
 For technical support, contact your system administrator.
 
-**ProTracker v6.1.3** - AI-Powered Production Tracker
+**ProTracker v6.3.0** - AI-Powered Production Tracker
