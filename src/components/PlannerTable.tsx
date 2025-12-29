@@ -312,10 +312,10 @@ export default function PlannerTable({
         const widths: Record<string, string> = {};
 
         // Calculate base WO ID width first as it's the reference for others
-        // Increase multiplier to 12 for 4k/high-res safety
-        const woIdRawWidth = Math.max(100, parseInt(calculateColumnWidth('WO ID', processedOrders, false)) * 1.5);
-        // WO ID: Dynamic, min 100px, max 200px
-        const woIdWidthVal = Math.min(200, Math.max(100, woIdRawWidth));
+        // Tighter multiplier (1.1) for just enough visibility
+        const woIdRawWidth = Math.max(70, parseInt(calculateColumnWidth('WO ID', processedOrders, false)) * 1.1);
+        // WO ID: Dynamic, min 70px, max 150px
+        const woIdWidthVal = Math.min(150, Math.max(70, woIdRawWidth));
         const woIdWidthStr = `${woIdWidthVal}px`;
 
         // FIXED widths for detail columns - minimal to maximize step space
@@ -328,9 +328,8 @@ export default function PlannerTable({
                 const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             } else if (col === 'Description' || col === 'Remarks') {
-                // Description and Remarks: 1.5x of WO ID width
-                // Ex: if WO ID is 80px, these will be 120px
-                const widthVal = Math.floor(woIdWidthVal * 1.5);
+                // Description and Remarks: 1.2x of WO ID width (reduced from 1.5x)
+                const widthVal = Math.floor(woIdWidthVal * 1.2);
                 widths[col] = `${widthVal}px`;
             } else {
                 // Other columns (5, 6, 7...) - Compact dynamic
