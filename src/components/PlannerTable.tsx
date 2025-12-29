@@ -312,9 +312,10 @@ export default function PlannerTable({
         const widths: Record<string, string> = {};
 
         // Calculate base WO ID width first as it's the reference for others
-        const woIdRawWidth = parseInt(calculateColumnWidth('WO ID', processedOrders, false));
-        // WO ID: Dynamic, min 60px, max 150px (increased from 120px) to see full content
-        const woIdWidthVal = Math.min(150, Math.max(60, woIdRawWidth));
+        // Increase multiplier to 12 for 4k/high-res safety
+        const woIdRawWidth = Math.max(100, parseInt(calculateColumnWidth('WO ID', processedOrders, false)) * 1.5);
+        // WO ID: Dynamic, min 100px, max 200px
+        const woIdWidthVal = Math.min(200, Math.max(100, woIdRawWidth));
         const woIdWidthStr = `${woIdWidthVal}px`;
 
         // FIXED widths for detail columns - minimal to maximize step space
@@ -488,7 +489,7 @@ export default function PlannerTable({
                                     return (
                                         <td
                                             key={col}
-                                            style={{ width: columnWidths[col] }}
+                                            style={{ width: columnWidths[col], color: 'red', fontWeight: 'bold' }}
                                             className="px-1 py-0.5 sticky left-0 bg-inherit z-10 cursor-pointer text-indigo-600 hover:underline font-medium text-[10px] border-r border-slate-200"
                                             onClick={() => onNavigate(value)}
                                         >
