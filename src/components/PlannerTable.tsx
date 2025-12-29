@@ -335,9 +335,9 @@ export default function PlannerTable({
             }
             // 2nd Column (PN - Index 1)
             else if (index === 1) {
-                // PN: Dynamic, min 60px, max 120px
+                // PN: Dynamic, min 25px (was 60), max 120px
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
-                const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
+                const widthValue = Math.min(120, Math.max(25, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
             // All other columns (4, 5, 6... - Index 3+)
@@ -346,7 +346,7 @@ export default function PlannerTable({
                 // Dynamic Tight Fit
                 // Max 100px to protect Step columns from resizing
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
-                const widthValue = Math.min(100, Math.max(40, parseInt(dynamicWidth)));
+                const widthValue = Math.min(100, Math.max(25, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
         });
