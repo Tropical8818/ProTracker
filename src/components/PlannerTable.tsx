@@ -318,9 +318,9 @@ export default function PlannerTable({
             } else if (col === 'PN') {
                 widths[col] = '50px';  // Compact PN
             } else if (col === 'Description') {
-                widths[col] = '60px';  // Truncated description
+                widths[col] = '40px';  // Reduced from 60px
             } else if (col === 'Remarks') {
-                widths[col] = '60px';  // Truncated remarks
+                widths[col] = '40px';  // Reduced from 60px
             } else {
                 widths[col] = '20px';  // All other columns minimal
             }
