@@ -65,6 +65,7 @@ Specialized shop floor monitor view:
 ### DEMO
 https://protracker.puppy101.dpdns.org/
 Ask auther for access.
+mailto: jkdb0g@whatifthenhow.com
 
 ---
 ## 📝 Changelog
