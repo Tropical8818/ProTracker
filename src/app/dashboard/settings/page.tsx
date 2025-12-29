@@ -434,7 +434,7 @@ export default function SettingsPage() {
                         <div className="bg-indigo-600 p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.1.4</span></h1>
+                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.2.0</span></h1>
                     </div>
 
                     <nav className="flex items-center gap-2">

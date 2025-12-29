@@ -226,7 +226,7 @@ export default function DraggableMenu({
                     )}
 
                     <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400">
-                        <span>v6.1.4</span>
+                        <span>v6.2.0</span>
                         <button onClick={onLogout} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-medium">
                             <LogOut className="w-4 h-4" />
                             Log Out
