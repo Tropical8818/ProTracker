@@ -462,7 +462,7 @@ export default function PlannerTable({
                     {/* Filter Row */}
                     <tr className="bg-white">
                         {columns.map((col, i) => (
-                            <th key={col} className={`px-0.5 py-0.5 bg-white border-r border-slate-200 border-b border-slate-200 ${i === 0 ? 'sticky left-0 z-30 min-w-[70px]' : ''}`}>
+                            <th key={col} className={`px-0.5 py-0.5 bg-white border-r border-slate-200 border-b border-slate-200 ${i === 0 ? 'sticky left-0 z-30' : ''}`}>
                                 <input
                                     type="text"
                                     placeholder=".."
@@ -488,7 +488,7 @@ export default function PlannerTable({
                                     return (
                                         <td
                                             key={col}
-                                            style={{ width: columnWidths[col], minWidth: '70px' }}
+                                            style={{ width: columnWidths[col] }}
                                             className="px-1 py-0.5 sticky left-0 bg-inherit z-10 cursor-pointer text-indigo-600 hover:underline font-medium text-[10px] border-r border-slate-200"
                                             onClick={() => onNavigate(value)}
                                         >
@@ -581,7 +581,12 @@ export default function PlannerTable({
                                 return (
                                     <td
                                         key={step}
-                                        className={`px-0.5 py-0.5 text-center text-[9px] tracking-tighter font-medium whitespace-nowrap border-r border-slate-100 ${isEraseClickable
+                                        style={{
+                                            width: columnWidths[step],
+                                            maxWidth: columnWidths[step],
+                                            ...getCellStyle(cellValue)
+                                        }}
+                                        className={`px-0.5 py-0.5 text-center text-[9px] tracking-tighter font-medium whitespace-nowrap overflow-hidden border-r border-slate-100 ${isEraseClickable
                                             ? 'cursor-pointer hover:bg-red-200 hover:ring-2 hover:ring-red-400'
                                             : isRemovable
                                                 ? 'cursor-pointer hover:bg-red-100 hover:ring-2 hover:ring-red-300'
@@ -599,7 +604,6 @@ export default function PlannerTable({
                                                                         ? 'cursor-pointer hover:bg-green-100 hover:ring-2 hover:ring-green-300'
                                                                         : ''
                                             }`}
-                                        style={{ width: columnWidths[step], ...getCellStyle(cellValue) }}
                                         onClick={() => {
                                             if (isEraseClickable && onErase) {
                                                 onErase(order['WO ID'], step);
