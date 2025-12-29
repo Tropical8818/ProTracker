@@ -381,9 +381,17 @@ export default function PlannerTable({
                         >
                             WO: {orders.length}
                         </td>
-                        {effectiveDetailColumns.length > 1 && (
-                            <td colSpan={effectiveDetailColumns.length - 1} className="px-2 py-1 text-right font-medium text-slate-500 bg-slate-50">P+WIP:</td>
-                        )}
+                        {/* Detail Columns - Fixed 1:1 mapping (No colSpan to ensure perfect width control) */}
+                        {effectiveDetailColumns.slice(1).map((col, i) => (
+                            <td
+                                key={`sum-${col}`}
+                                style={{ width: columnWidths[col] }}
+                                className="px-2 py-1 text-right font-medium text-slate-500 bg-slate-50 border-r border-slate-100"
+                            >
+                                {/* Only show P+WIP label in the last detail column to save space */}
+                                {i === effectiveDetailColumns.length - 2 ? 'P+WIP:' : ''}
+                            </td>
+                        ))}
 
                         {orderedSteps.map(step => {
                             const count = pCounts[step] || 0;
