@@ -1,11 +1,35 @@
-# ProTracker - AI-Powered Production Tracker
+# ProTracker - The Agile Manufacturing Middleware
+> Bridging the gap between rigid ERP systems and the dynamic shop floor.
 
 [🇺🇸 English](README.md) | [🇨🇳 简体中文](README_ZH.md)
 
-> 🤖 **V6.3.0 New Features**: **Super Edit Mode** for Admins/Supervisors, Enhanced Completion Logic (N/A = Done), and Manual Column Resizing.
+## 🎯 The Problem
+In modern high-mix manufacturing, relying solely on heavy ERP systems like **SAP** or **ME POD** creates critical operational gaps:
+
+1.  **System Rigidity**: SAP is powerful but inflexible. It cannot adapt quickly to the fluid reality of the shop floor (machine breakdowns, urgent re-prioritization).
+2.  **Data Lag**: ME POD data often has a synchronization delay when importing to SAP. This means the "System Truth" (SAP) is often hours behind the "Ground Truth" (Shop Floor).
+3.  **Invisible Steps**: Operational steps often get skipped or not recorded in SAP due to complexity, causing orders to appear "stuck" in the wrong status.
+4.  **The "Black Box" Effect**: Planners and Supervisors cannot see real-time progress. They rely on:
+    *   Manual spreadsheets (siloed data).
+    *   Social media/chat apps for updates (unprofessional, hard to track).
+    *   Human memory (prone to error).
+
+**Result**: You cannot precisely schedule manpower or machines because you don't know the *actual* state of the floor.
+
+---
+
+## 💡 The Solution: ProTracker
+ProTracker is not a replacement for SAP. It is the **Agile Middleware Layer** that sits between your heavy ERP and your agile teams.
+
+It provides a lightweight, real-time visual interface that:
+*   **Visualizes the Invisible**: Tracks the micro-steps and real-time status that SAP misses.
+*   **Empowers "Super Edit"**: Allows Supervisors to correct data instantly (e.g., bypassing a "stuck" step) without waiting for IT tickets.
+*   **Kiosk Mode**: Replaces "asking via WeChat" with large, auto-updating shop floor monitors.
+*   **AI-Driven Insights**: A built-in AI assistant that analyzes risk and generates reports, replacing manual data crunching.
+
+---
 
 ## 🚀 Quick Start
-
 ### 1. Install Dependencies
 ```bash
 npm install
@@ -21,84 +45,49 @@ OPENAI_API_KEY=sk-your-api-key-here
 ```bash
 npm run dev
 ```
-
 Visit http://localhost:3000
 
 ---
 
-## ✨ AI Features (v6.0.0)
+## ✨ Key Capabilities
 
-### 💬 Floating AI Assistant
-A specialized production assistant that helps you:
-- **Analyze Risks**: "Which orders are likely to be delayed?"
-- **Generate Morning Reports**: "Prepare a summary for the morning meeting."
-- **Smart Navigation**: "Show me WO-1234" -> *Auto-opens order details*.
+### 1. 🖥️ Shop Floor Kiosk (The "Control Tower")
+*   **Purpose**: Replaces social media updates. A passive, always-on monitor for the floor.
+*   **Features**:
+    *   **Auto-Scroll & Refresh**: No mouse needed. Cycles through active orders.
+    *   **Visual Priority**: Color-coded status (WIP, HOLD, QN) for instant awareness.
+    *   **Privacy & Security**: Locked down mode with password-protected admin access.
+    *   **Tabular Alignment**: Precision engineered for readability at a distance.
 
-### 🛡️ AI Guardrails
-The AI is strictly scoped to production topics. It will refuse non-work-related queries (e.g., jokes, weather) to ensure professional use.
+### 2. ✏️ Super Edit Mode (Agile Correction)
+*   **Purpose**: Fix "SAP Lag" and "Missing Steps" instantly.
+*   **Features**:
+    *   **Direct Manipulation**: Supervisors can "force" a step to complete or correction data directly in the UI.
+    *   **Optimistic UI**: No waiting for server round-trips; changes feel instant.
+    *   **Audit Trail**: Every change is logged, ensuring accountability while allowing flexibility.
 
----
-
-### 🖥️ Kiosk Mode (v6.1.0)
-Specialized shop floor monitor view:
-- **Compact & Comfortable Views**: Toggle between high-density 2-column grid or large card layouts.
-- **Role-Based Lockdown**: Dedicated `kiosk` role automatically restricted to the monitor view.
-- **30-Day Persistence**: Extended session duration for reliable long-term terminal use.
-- **Secure Unlock**: Access administrative tools within Kiosk using your account password.
-- **Smart Sorting**: Orders are prioritized by Due Date, Priority flags, and "Planned" status.
+### 3. 🤖 AI Copilot (The "Digital Planner")
+*   **Purpose**: Augment human decision making.
+*   **Features**:
+    *   **Risk Analysis**: "Which orders are stuck in WIP for >24h?"
+    *   **Report Generation**: "Draft a shift handover report based on today's logs."
+    *   **Context Aware**: Knows your specific product lines and terminology.
 
 ---
 
 ## 🔒 Security & Management
-
-### Role-Based Access
-- **Admin**: Full access + AI Risk Analysis + Log Clearing + User Management.
-- **Supervisor**: Management + AI Reports + User Approvals.
-- **User**: Operation View + Basic Chat.
-- **Kiosk**: Strictly restricted to Shop Floor Monitor (30-day session).
-
-### 📊 Log Management
-- **CSV Export**: Download comprehensive operation logs.
-- **Clear Logs**: Admin-only function to reset history.
+*   **Role-Based Access**: Strict separation between Admin, Supervisor, User, and Kiosk roles.
+*   **Log Management**: Full CSV export capabilities for post-mortem analysis.
 
 ---
+
 ### DEMO
 https://protracker.puppy101.dpdns.org/
-Ask auther for access.
-mailto: jkdb0g@whatifthenhow.com
-
----
-## 📝 Changelog
-
-### V6.3.0
-- ✏️ **Super Edit Mode**: Admins/Supervisors can now directly edit Detail Columns (WO ID, PN, etc.) inline.
-- ✅ **Enhanced Completion**: Marking the final step as "N/A" now correctly treats the order as completed.
-- 📐 **Manual Column Resizing**: Users can drag column headers to adjust width, with auto-save preference.
-- 🛡️ **ECD Protection**: Estimated Completion Date column remains locked in Super Edit mode to preserve calculation integrity.
-### V6.1.3
-- 🔑 **Employee ID Login**: Unified login system using Employee IDs instead of usernames.
-- 👑 **Super Admin Hierarchy**: Only Super Admin can create/promote other admins.
-- 🛡️- **Employee ID Login**: Unified login system using Employee IDs instead of usernames.
-- **Employee ID Privacy**: AI uses anonymous employee IDs to protect employee privacy.l names.
-- 🎨 **Enhanced UI**: Super Admin displays with special gold badge in user management.
-
-### V6.1.0
-- 🖥️ **Professional Kiosk Mode**: New Shop Floor Monitor with auto-scroll and 60s refresh.
-- 📐 **Density Control**: Switch between "Comfortable" (large cards) and "Compact" (2-column list) views.
-- 🔒 **Enhanced Security**: Role-based lockdown for `kiosk` accounts and password-protected unlock.
-- ⏳ **30-Day Sessions**: Extended login persistence for terminal deployment.
-- 📈 **Smart Sorting**: Priority logic based on Due Date, Priority flags, and P (Planned) status.
-
-### V6.0.0
-- ✨ **Floating AI Assistant**: New UI with persistent chat.
-- 🧭 **Smart Navigation**: Navigate to orders via chat commands.
-- 🛡️ **Role-Based AI**: Restricted advanced tools to Admin/Supervisor.
-- 📊 **Log Management**: CSV Export and Clear Logs features.
-- 🔒 **AI Guardrails**: Strict scope enforcement.
-
-### V5.0.0
-- Added initial AI Chat functionality.
-- Integrated OpenAI GPT-4o-mini.
+Contact author for access: mailto: jkdb0g@whatifthenhow.com
 
 ---
 
+## 📝 Changelog highlights
+*   **v6.4.0**: Added Order Deletion & Kiosk Alignment fixes.
+*   **v6.3.0**: Introduced Super Edit Mode.
+*   **v6.1.0**: Launched Professional Kiosk Mode.

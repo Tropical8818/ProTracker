@@ -972,21 +972,6 @@ export default function DashboardPage() {
 
                         {/* Fixed Actions (Info, Logout) */}
                         <div className="flex items-center gap-1 shrink-0 ml-1 border-l border-slate-200 pl-2">
-                            <div className="relative group hidden sm:block">
-                                <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg cursor-help">
-                                    <Info className="w-5 h-5" />
-                                </button>
-                                {/* Tooltip */}
-                                <div className="absolute top-full right-0 mt-2 w-auto min-w-[120px] bg-[#4e80ff] text-white text-[10px] p-3 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
-                                    <div className="font-bold text-xs mb-1 whitespace-nowrap">ProTracker</div>
-                                    <div className="space-y-0.5 text-slate-300">
-                                        <div className="flex justify-between gap-3"><span>Version:</span> <span>6.4.0</span></div>
-                                        <div className="flex justify-between gap-3"><span>Developer:</span> <span>Eric</span></div>
-                                        <div className="flex justify-between gap-3"><span>License:</span> <span>MIT</span></div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <button
                                 onClick={handleLogout}
                                 className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
@@ -1426,6 +1411,24 @@ export default function DashboardPage() {
                         })()}
                     </>
                 )}
+
+                {/* Footer Info Icon */}
+                <div className="fixed bottom-4 left-4 z-50">
+                    <div className="relative group">
+                        <button className="p-1.5 text-slate-300 hover:text-indigo-400 hover:bg-slate-800/50 rounded-full transition-all cursor-help opacity-50 hover:opacity-100">
+                            <Info className="w-3 h-3" />
+                        </button>
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full left-0 mb-2 w-auto min-w-[120px] bg-[#4e80ff] text-white text-[10px] p-3 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 animate-in slide-in-from-bottom-2">
+                            <div className="font-bold text-xs mb-1 whitespace-nowrap">ProTracker</div>
+                            <div className="space-y-0.5 text-slate-300">
+                                <div className="flex justify-between gap-3"><span>Version:</span> <span>6.4.0</span></div>
+                                <div className="flex justify-between gap-3"><span>Developer:</span> <span>Eric</span></div>
+                                <div className="flex justify-between gap-3"><span>License:</span> <span>MIT</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
 
             {/* Bulk Confirmation Modal */}
