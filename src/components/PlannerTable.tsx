@@ -311,17 +311,27 @@ export default function PlannerTable({
         const widths: Record<string, string> = {};
 
         // Calculate widths for detail columns
-        // EXTREME COMPRESSION: Minimize detail columns to maximize step visibility
+        // WO ID and PN: must show full content
+        // Description and Remarks: 2x the width of WO ID/PN
+        // Other columns: minimal width
+
+        // First pass: calculate WO ID width (will be used as base)
+        const woIdWidth = calculateColumnWidth('WO ID', processedOrders, false);
+        const baseWidth = parseInt(woIdWidth);
+
         effectiveDetailColumns.forEach((col, index) => {
-            if (index === 0) {
-                // First column (WO ID) - fixed 70px
-                widths[col] = '70px';
-            } else if (index === 1) {
-                // Second column (PN) - fixed 70px
-                widths[col] = '70px';
+            if (col === 'WO ID') {
+                // WO ID - dynamic, must see full content
+                widths[col] = woIdWidth;
+            } else if (col === 'PN') {
+                // PN - dynamic, must see full content
+                widths[col] = calculateColumnWidth(col, processedOrders, false);
+            } else if (col === 'Description' || col === 'Remarks') {
+                // Description and Remarks: 2x the base width
+                widths[col] = `${baseWidth * 2}px`;
             } else {
                 // All other detail columns - minimal width
-                widths[col] = '25px';  // Extreme compression from 30px to 25px
+                widths[col] = '25px';
             }
         });
 
