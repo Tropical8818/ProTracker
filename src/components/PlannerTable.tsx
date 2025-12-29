@@ -118,8 +118,8 @@ export default function PlannerTable({
             const baseWidth = Math.max(36, Math.min(80, maxLength * 8));
             return `${baseWidth}px`;
         } else {
-            // Detail columns: more spacious (70-200px)
-            const baseWidth = Math.max(70, Math.min(200, maxLength * 10));
+            // Detail columns: compact (60-100px)
+            const baseWidth = Math.max(60, Math.min(100, maxLength * 8));
             return `${baseWidth}px`;
         }
     };
@@ -327,8 +327,8 @@ export default function PlannerTable({
                 // PN - dynamic, must see full content
                 widths[col] = calculateColumnWidth(col, processedOrders, false);
             } else if (col === 'Description' || col === 'Remarks') {
-                // Description and Remarks: 2x the base width
-                widths[col] = `${baseWidth * 2}px`;
+                // Description and Remarks: fixed 100px (2x base ~50px)
+                widths[col] = '100px';
             } else {
                 // All other detail columns - minimal width
                 widths[col] = '25px';
