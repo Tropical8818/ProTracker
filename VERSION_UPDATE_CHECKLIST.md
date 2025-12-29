@@ -68,6 +68,7 @@ grep -r "V6\.[0-9]\.[0-9]" src/
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 6.3.0 | 2025-12-29 | Advanced Column Layout v3 (Dynamic Tight Fit, 1.5x Rules, Fixed Steps, w-auto fix) |
 | 6.2.0 | 2025-12-29 | UI-based watcher controls, dashboard refresh fix, skip-existing import mode |
 | 6.1.4 | 2025-12-XX | Previous stable version |
 

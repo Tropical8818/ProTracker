@@ -167,7 +167,7 @@ function OperationContent() {
                         <div className="bg-indigo-600 p-1.5 sm:p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-base sm:text-lg font-bold text-slate-900 hidden sm:block">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.2.0</span></h1>
+                        <h1 className="text-base sm:text-lg font-bold text-slate-900 hidden sm:block">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.3.0</span></h1>
                     </div>
 
                     {/* Operator Display */}
