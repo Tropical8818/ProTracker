@@ -283,6 +283,25 @@ export default function DashboardPage() {
 
 
 
+    const handleDeleteOrder = async (woId: string) => {
+        try {
+            const res = await fetch(`/api/orders/${woId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                // Optimistic update
+                setOrders(prev => prev.filter(o => o.id !== woId));
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to delete order');
+            }
+        } catch (error) {
+            console.error('Error deleting order:', error);
+            alert('Failed to delete order');
+        }
+    };
+
     // Fetch products and auth
     const fetchConfig = async () => {
         try {
@@ -1398,6 +1417,8 @@ export default function DashboardPage() {
                                                     alert('Error updating detail');
                                                 }
                                             }}
+
+                                            onDeleteOrder={handleDeleteOrder}
                                         />
                                     </div>
                                 </>

@@ -368,7 +368,7 @@ export default function KioskPage() {
                             >
                                 <div className={`flex flex-col border-r border-slate-800/50 ${viewDensity === 'comfortable' ? 'pr-6' : 'pr-3'}`}>
                                     <div className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em] mb-2">Order Tracking</div>
-                                    <div className={`${viewDensity === 'comfortable' ? 'text-7xl' : 'text-3xl'} font-black text-white tracking-tighter leading-none truncate`} title={order.woId}>
+                                    <div className={`${viewDensity === 'comfortable' ? 'text-7xl' : 'text-3xl'} font-black text-white tracking-tighter leading-none truncate tabular-nums`} title={order.woId}>
                                         {order.woId}
                                     </div>
                                 </div>

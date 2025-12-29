@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowUp, ArrowDown, ArrowUpDown, Download, Lock, Unlock } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowUpDown, Download, Lock, Unlock, Trash2 } from 'lucide-react';
 import { format, isValid, parseISO } from 'date-fns';
 import type { Order } from '@/lib/excel';
 
@@ -34,6 +34,7 @@ interface Props {
     extraColumns?: string[];
     role?: string;
     onUpdateDetail?: (woId: string, field: string, value: string) => Promise<void>;
+    onDeleteOrder?: (woId: string) => Promise<void>;
 }
 
 type SortDir = 'asc' | 'desc' | null;
@@ -98,7 +99,10 @@ export default function PlannerTable({
     highlightedWos = [],
     extraColumns = [],
     role,
-    onUpdateDetail
+
+
+    onUpdateDetail,
+    onDeleteOrder
 }: Props) {
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<SortDir>(null);
@@ -622,15 +626,37 @@ export default function PlannerTable({
                                 // WO ID - Clickable, first column sticky
                                 if (col === 'WO ID') {
                                     return (
+
                                         <td
                                             key={col}
                                             style={{ width: columnWidths[col] }}
-                                            className="px-1 py-0.5 sticky left-0 bg-inherit z-10 cursor-pointer text-indigo-600 hover:underline font-medium text-[10px] border-r border-slate-200"
-                                            onClick={() => onNavigate(value)}
+                                            className="px-1 py-0.5 sticky left-0 bg-inherit z-10 font-medium text-[10px] border-r border-slate-200 group/cell"
                                         >
-                                            {value}
+                                            <div className="flex items-center justify-between gap-1">
+                                                <span
+                                                    className="cursor-pointer text-indigo-600 hover:underline truncate"
+                                                    onClick={() => onNavigate(value)}
+                                                >
+                                                    {value}
+                                                </span>
+                                                {isSuperEditing && onDeleteOrder && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (confirm(`Are you sure you want to PERMANENTLY DELETE Order ${value}?`)) {
+                                                                onDeleteOrder(order.id);
+                                                            }
+                                                        }}
+                                                        className="opacity-0 group-hover/cell:opacity-100 p-0.5 text-slate-400 hover:text-red-600 transition-opacity"
+                                                        title="Delete Order"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     );
+
                                 }
 
                                 // Due Date - Fuzzy match "DUE"
