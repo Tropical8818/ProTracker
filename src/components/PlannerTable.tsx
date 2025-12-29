@@ -310,13 +310,18 @@ export default function PlannerTable({
     const columnWidths = useMemo(() => {
         const widths: Record<string, string> = {};
 
-        // Calculate widths for detail columns (each can have different width)
-        effectiveDetailColumns.forEach(col => {
-            // Remarks column should be narrower - use fixed 60px
-            if (col === 'Remarks') {
-                widths[col] = '60px';
-            } else {
+        // Calculate widths for detail columns
+        // Priority: Keep first 2 columns (WO ID, PN) dynamic, rest use small fixed widths
+        effectiveDetailColumns.forEach((col, index) => {
+            if (index === 0) {
+                // First column (WO ID) - dynamic, minimum 70px
                 widths[col] = calculateColumnWidth(col, processedOrders, false);
+            } else if (index === 1) {
+                // Second column (PN) - dynamic
+                widths[col] = calculateColumnWidth(col, processedOrders, false);
+            } else {
+                // All other detail columns - use smaller fixed widths to save space for steps
+                widths[col] = '50px';  // Compact width for all other details
             }
         });
 
