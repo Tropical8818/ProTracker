@@ -312,13 +312,11 @@ export default function PlannerTable({
 
         // Calculate widths for detail columns (each can have different width)
         effectiveDetailColumns.forEach(col => {
-            const normalWidth = calculateColumnWidth(col, processedOrders, false);
-            // Remarks column should be half the normal width
-            if (col.toLowerCase().includes('remark')) {
-                const widthValue = parseInt(normalWidth);
-                widths[col] = `${Math.floor(widthValue / 2)}px`;
+            // Remarks column should be narrower - use fixed 60px
+            if (col === 'Remarks') {
+                widths[col] = '60px';
             } else {
-                widths[col] = normalWidth;
+                widths[col] = calculateColumnWidth(col, processedOrders, false);
             }
         });
 
