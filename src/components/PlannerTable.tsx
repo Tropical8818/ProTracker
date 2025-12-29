@@ -327,34 +327,33 @@ export default function PlannerTable({
             if (index === 0) {
                 widths[col] = woIdWidthStr;
             }
-            // 3rd Column (Description - Index 2)
-            // Kept as 1.5x (User omitted "3" from the "fit content" list, implying it stays special)
-            else if (index === 2) {
+            // 3rd & 4th Columns (Description/Remarks) - Index 2 & 3
+            // User Request: "3 and 4 cols are 1.5x of 1st"
+            else if (index === 2 || index === 3) {
                 const widthVal = Math.floor(woIdWidthVal * 1.5);
                 widths[col] = `${widthVal}px`;
             }
             // 2nd Column (PN - Index 1)
             else if (index === 1) {
-                // PN: Dynamic, min 25px (was 60), max 120px
+                // PN: Dynamic, min 25px, max 120px
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
                 const widthValue = Math.min(120, Math.max(25, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
-            // All other columns (4, 5, 6... - Index 3+)
-            // User: "1 2 4 5 6 7 8 9 according to content, don't squeeze steps"
+            // All other columns (5, 6... - Index 4+)
             else {
                 // Dynamic Tight Fit
-                // Max 100px to protect Step columns from resizing
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
                 const widthValue = Math.min(100, Math.max(25, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
         });
 
-        // FIXED width for ALL step columns - 55px each
-        // 55px fits "30-Dec-24" well. w-auto ensures strict sizing.
+        // Step columns: 'auto' so they share remaining space
+        // This guarantees NO SCROLLING (user requirement: "see last col without sliding")
+        // Dates might be tight, but layout is prioritized.
         orderedSteps.forEach(step => {
-            widths[step] = '55px';
+            widths[step] = 'auto';
         });
 
         return widths;
@@ -362,7 +361,7 @@ export default function PlannerTable({
 
     return (
         <div className="overflow-auto bg-white rounded-xl shadow-sm border border-slate-200 max-h-[calc(100vh-200px)]">
-            <table className="text-xs border-collapse w-auto table-fixed">
+            <table className="text-xs border-collapse w-full table-fixed">
                 <colgroup>
                     {/* Detail Columns */}
                     {effectiveDetailColumns.map((col) => (
