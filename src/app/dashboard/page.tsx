@@ -649,7 +649,8 @@ export default function DashboardPage() {
 
             const val = order[completionStep] || '';
             const hasDate = /\d{4}-\d{2}-\d{2}/.test(val) || /\d{2}[-\/]\w{3}/.test(val);
-            return !hasDate;
+            const isNA = val.toUpperCase() === 'N/A';
+            return !hasDate && !isNA;
         });
 
 
@@ -1116,10 +1117,10 @@ export default function DashboardPage() {
                             <div className={`rounded-lg border p-3 ${displayedOrders.filter(o => {
                                 const due = o['WO DUE'];
                                 if (!due) return false;
-                                // Exclude completed orders (last step has date)
+                                // Exclude completed orders (last step has date or N/A)
                                 const lastStep = steps[steps.length - 1];
                                 const lastStepValue = lastStep ? (o[lastStep] || '') : '';
-                                if (/\d{4}-\d{2}-\d{2}/.test(lastStepValue) || /\d{2}[-\/]\w{3}/.test(lastStepValue)) return false;
+                                if (/\d{4}-\d{2}-\d{2}/.test(lastStepValue) || /\d{2}[-\/]\w{3}/.test(lastStepValue) || lastStepValue.toUpperCase() === 'N/A') return false;
                                 const dueDate = new Date(due);
                                 const today = new Date();
                                 today.setHours(0, 0, 0, 0);
@@ -1135,7 +1136,7 @@ export default function DashboardPage() {
                                     if (!due) return false;
                                     const lastStep = steps[steps.length - 1];
                                     const lastStepValue = lastStep ? (o[lastStep] || '') : '';
-                                    if (/\d{4}-\d{2}-\d{2}/.test(lastStepValue) || /\d{2}[-\/]\w{3}/.test(lastStepValue)) return false;
+                                    if (/\d{4}-\d{2}-\d{2}/.test(lastStepValue) || /\d{2}[-\/]\w{3}/.test(lastStepValue) || lastStepValue.toUpperCase() === 'N/A') return false;
                                     const dueDate = new Date(due);
                                     const today = new Date();
                                     today.setHours(0, 0, 0, 0);
@@ -1148,6 +1149,7 @@ export default function DashboardPage() {
                                         if (!due) return false;
                                         const lastStep = steps[steps.length - 1];
                                         const lastStepValue = lastStep ? (o[lastStep] || '') : '';
+                                        if (/\d{4}-\d{2}-\d{2}/.test(lastStepValue) || /\d{2}[-\/]\w{3}/.test(lastStepValue) || lastStepValue.toUpperCase() === 'N/A') return false;
                                         if (/\d{4}-\d{2}-\d{2}/.test(lastStepValue) || /\d{2}[-\/]\w{3}/.test(lastStepValue)) return false;
                                         const dueDate = new Date(due);
                                         const today = new Date();
