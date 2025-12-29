@@ -656,7 +656,7 @@ export default function DashboardPage() {
                         <div className="bg-indigo-600 p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.0.0</span></h1>
+                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.1.4</span></h1>
                         <div className="hidden sm:block text-sm text-slate-500 border-l border-slate-200 pl-3">
                             {new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
                         </div>
