@@ -489,7 +489,7 @@ export default function PlannerTable({
                                     return (
                                         <td
                                             key={col}
-                                            style={{ width: columnWidths[col], color: 'red', fontWeight: 'bold' }}
+                                            style={{ width: columnWidths[col] }}
                                             className="px-1 py-0.5 sticky left-0 bg-inherit z-10 cursor-pointer text-indigo-600 hover:underline font-medium text-[10px] border-r border-slate-200"
                                             onClick={() => onNavigate(value)}
                                         >
