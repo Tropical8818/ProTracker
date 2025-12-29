@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
     Activity, Clock, AlertTriangle, CheckCircle2,
     ChevronRight, Factory, Timer, Layers, Filter, Grid, ChevronDown, Lock, Unlock, X,
-    LayoutList, Maximize2
+    LayoutList, Maximize2, LogOut
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -618,6 +618,24 @@ export default function KioskPage() {
                                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-2xl text-xl font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50"
                             >
                                 {isVerifying ? 'Verifying...' : 'Authenticate'}
+                            </button>
+
+                            <div className="relative flex py-2 items-center">
+                                <div className="flex-grow border-t border-slate-800"></div>
+                                <span className="flex-shrink-0 mx-4 text-slate-600 text-xs font-bold uppercase tracking-widest">or</span>
+                                <div className="flex-grow border-t border-slate-800"></div>
+                            </div>
+
+                            <button
+                                onClick={async () => {
+                                    await fetch('/api/auth', { method: 'DELETE' });
+                                    router.push('/login');
+                                    router.refresh();
+                                }}
+                                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-4 rounded-2xl text-lg font-bold uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
+                            >
+                                <LogOut className="w-5 h-5" />
+                                Log Out / Switch User
                             </button>
                         </div>
 
