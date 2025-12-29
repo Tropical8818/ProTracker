@@ -345,7 +345,21 @@ export default function PlannerTable({
                 const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
-            // All other columns (5, 6... - Index 4+)
+            // Cols 5, 6, 7, 8 (Indices 4, 5, 6, 7) - User: "Too narrow"
+            else if (index >= 4 && index <= 7) {
+                // Min 50px to ensure visibility
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(120, Math.max(50, parseInt(dynamicWidth)));
+                widths[col] = `${widthValue}px`;
+            }
+            // Col 9 (Index 8) - User: "Too wide"
+            else if (index === 8) {
+                // Cap max at 60px
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(60, Math.max(25, parseInt(dynamicWidth)));
+                widths[col] = `${widthValue}px`;
+            }
+            // Any other columns (10+...)
             else {
                 // Dynamic Tight Fit
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
