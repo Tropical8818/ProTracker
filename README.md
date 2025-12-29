@@ -91,3 +91,12 @@ Contact author for access: mailto: jkdb0g@whatifthenhow.com
 *   **v6.4.0**: Added Order Deletion & Kiosk Alignment fixes.
 *   **v6.3.0**: Introduced Super Edit Mode.
 *   **v6.1.0**: Launched Professional Kiosk Mode.
+
+---
+
+## 🛡️ License & Community
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Stars](https://img.shields.io/github/stars/Tropical8818/ProTracker?style=social)](https://github.com/Tropical8818/ProTracker)
+
+## 📈 Git Trend
+[![Star History Chart](https://api.star-history.com/svg?repos=Tropical8818/ProTracker&type=Date)](https://star-history.com/#Tropical8818/ProTracker&Date)
