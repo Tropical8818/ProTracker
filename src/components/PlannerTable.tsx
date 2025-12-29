@@ -321,19 +321,30 @@ export default function PlannerTable({
         // FIXED widths for detail columns - minimal to maximize step space
         effectiveDetailColumns.forEach((col) => {
             if (col === 'WO ID') {
-                widths[col] = '300px'; // MASSIVE TEST WIDTH
+                widths[col] = woIdWidthStr;
             } else if (col === 'PN') {
-                widths[col] = '150px'; // Fixed large
+                // PN: Dynamic, min 60px, max 120px
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
+                widths[col] = `${widthValue}px`;
             } else if (col === 'Description' || col === 'Remarks') {
-                widths[col] = '200px'; // Fixed large
+                // Description and Remarks: 1.5x of WO ID width
+                // Ex: if WO ID is 80px, these will be 120px
+                const widthVal = Math.floor(woIdWidthVal * 1.5);
+                widths[col] = `${widthVal}px`;
             } else {
-                widths[col] = '80px';
+                // Other columns (5, 6, 7...) - Compact dynamic
+                // Min 30px, Max 60px - just enough to see content
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(60, Math.max(30, parseInt(dynamicWidth)));
+                widths[col] = `${widthValue}px`;
             }
         });
 
-        // FIXED width for ALL step columns - 60px each (MASSIVE)
+        // FIXED width for ALL step columns - 35px each
+        // 23 steps × 35px = 805px + ~400px details = ~1200px (fits in 1366px screen)
         orderedSteps.forEach(step => {
-            widths[step] = '60px';
+            widths[step] = '35px';
         });
 
         return widths;
@@ -345,7 +356,10 @@ export default function PlannerTable({
                 <thead className="sticky top-0 z-20 bg-white">
                     {/* Summary Row */}
                     <tr className="bg-slate-50 border-b border-slate-200">
-                        <td className="px-1 py-0.5 text-center font-bold text-amber-600 bg-slate-50 sticky left-0 z-30 min-w-[70px]">
+                        <td
+                            style={{ width: columnWidths['WO ID'] }}
+                            className="px-1 py-0.5 text-center font-bold text-amber-600 bg-slate-50 sticky left-0 z-30"
+                        >
                             WO: {orders.length}
                         </td>
                         {effectiveDetailColumns.length > 1 && (
@@ -373,7 +387,6 @@ export default function PlannerTable({
                                 key={col}
                                 style={{
                                     width: columnWidths[col],
-                                    minWidth: i === 0 ? '70px' : undefined,
                                     maxWidth: columnWidths[col] // Force max width
                                 }}
                                 className={`px-0.5 py-1 font-semibold text-slate-700 cursor-pointer hover:bg-slate-200 border-r border-slate-200 bg-slate-100 ${i === 0 ? 'sticky left-0 z-30' : ''
