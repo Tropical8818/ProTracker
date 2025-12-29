@@ -83,7 +83,7 @@ src/
 
 ### 演示
 https://protracker.puppy101.dpdns.org/
-咨询作者提供演示密码
+咨询作者提供演示密码，邮箱：jkdb0g@whatifthenhow.com
 
 ---
 
