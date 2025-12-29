@@ -327,12 +327,12 @@ export default function PlannerTable({
 
         // Calculate uniform width for ALL step columns
         // Find the maximum required width across all steps
-        let maxStepWidth = 36; // Minimum width
+        let maxStepWidth = 30; // Reduced minimum width
         orderedSteps.forEach(step => {
             const sampleOrders = processedOrders.slice(0, Math.min(20, processedOrders.length));
             const contents = sampleOrders.map(o => String(o[step] || '')).filter(c => c);
             const maxLength = Math.max(step.length, ...contents.map(c => c.length));
-            const requiredWidth = Math.max(36, Math.min(80, maxLength * 8));
+            const requiredWidth = Math.max(30, Math.min(40, maxLength * 5)); // Max 40px, min 30px
             maxStepWidth = Math.max(maxStepWidth, requiredWidth);
         });
 
