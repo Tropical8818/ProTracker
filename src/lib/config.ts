@@ -59,7 +59,8 @@ const DEFAULT_CONFIG: Config = {
     includeSaturday: false, // Default: exclude Saturday
     includeSunday: false,   // Default: exclude Sunday
     aiProvider: 'openai',   // Default to OpenAI
-    ollamaUrl: 'http://localhost:11434/v1'
+    ollamaUrl: 'http://localhost:11434/v1',
+    ollamaModel: 'llama3.1'
 };
 
 // Migrate from old config format (v2) to new format (v3)
