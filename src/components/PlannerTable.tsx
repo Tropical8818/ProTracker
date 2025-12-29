@@ -118,8 +118,9 @@ export default function PlannerTable({
             const baseWidth = Math.max(36, Math.min(80, maxLength * 8));
             return `${baseWidth}px`;
         } else {
-            // Detail columns: compact (60-100px)
-            const baseWidth = Math.max(60, Math.min(100, maxLength * 8));
+            // Detail columns: compact, tight fit (min 40px, no max here)
+            // Multiplier 7 is sufficient for text-[9px]/text-[10px]
+            const baseWidth = Math.max(40, maxLength * 7);
             return `${baseWidth}px`;
         }
     };
@@ -312,8 +313,8 @@ export default function PlannerTable({
         const widths: Record<string, string> = {};
 
         // Calculate base WO ID width first as it's the reference for others
-        // Tighter multiplier (1.1) for just enough visibility
-        const woIdRawWidth = Math.max(70, parseInt(calculateColumnWidth('WO ID', processedOrders, false)) * 1.1);
+        // Exact fit: No multiplier, char width 7
+        const woIdRawWidth = Math.max(70, parseInt(calculateColumnWidth('WO ID', processedOrders, false)));
         // WO ID: Dynamic, min 70px, max 150px
         const woIdWidthVal = Math.min(150, Math.max(70, woIdRawWidth));
         const woIdWidthStr = `${woIdWidthVal}px`;
