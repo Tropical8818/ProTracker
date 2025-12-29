@@ -314,13 +314,19 @@ export default function PlannerTable({
         // FIXED widths for detail columns - minimal to maximize step space
         effectiveDetailColumns.forEach((col) => {
             if (col === 'WO ID') {
-                widths[col] = '70px';  // Must see full WO ID
+                // WO ID: Dynamic, min 80px, max 120px - ensure full visibility
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(120, Math.max(80, parseInt(dynamicWidth)));
+                widths[col] = `${widthValue}px`;
             } else if (col === 'PN') {
-                widths[col] = '50px';  // Compact PN
+                // PN: Dynamic, min 60px, max 120px - ensure full visibility
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
+                widths[col] = `${widthValue}px`;
             } else if (col === 'Description') {
-                widths[col] = '40px';  // Reduced from 60px
+                widths[col] = '40px';  // Truncated description
             } else if (col === 'Remarks') {
-                widths[col] = '40px';  // Reduced from 60px
+                widths[col] = '40px';  // Truncated remarks
             } else {
                 widths[col] = '20px';  // All other columns minimal
             }
@@ -333,7 +339,7 @@ export default function PlannerTable({
         });
 
         return widths;
-    }, [effectiveDetailColumns, orderedSteps]);
+    }, [effectiveDetailColumns, orderedSteps, processedOrders]);
 
     return (
         <div className="overflow-auto bg-white rounded-xl shadow-sm border border-slate-200 max-h-[calc(100vh-200px)]">
