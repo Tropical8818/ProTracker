@@ -326,25 +326,26 @@ export default function PlannerTable({
             if (index === 0) {
                 widths[col] = woIdWidthStr;
             }
-            // 3rd & 4th Columns (Description/Remarks or whatever is there)
-            // User requested: "3 and 4 cols are 1.5x of 1st"
-            else if (index === 2 || index === 3) {
+            // 3rd Column (Description - Index 2)
+            // Kept as 1.5x (User omitted "3" from the "fit content" list, implying it stays special)
+            else if (index === 2) {
                 const widthVal = Math.floor(woIdWidthVal * 1.5);
                 widths[col] = `${widthVal}px`;
             }
-            // 2nd Column (usually PN)
+            // 2nd Column (PN - Index 1)
             else if (index === 1) {
                 // PN: Dynamic, min 60px, max 120px
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
                 const widthValue = Math.min(120, Math.max(60, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
-            // Others
+            // All other columns (4, 5, 6... - Index 3+)
+            // User: "1 2 4 5 6 7 8 9 according to content, don't squeeze steps"
             else {
-                // Other columns (5, 6, 7...) - Compact dynamic
-                // Min 30px, Max 60px - just enough to see content
+                // Dynamic Tight Fit
+                // Max 100px to protect Step columns from resizing
                 const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
-                const widthValue = Math.min(60, Math.max(30, parseInt(dynamicWidth)));
+                const widthValue = Math.min(100, Math.max(40, parseInt(dynamicWidth)));
                 widths[col] = `${widthValue}px`;
             }
         });
