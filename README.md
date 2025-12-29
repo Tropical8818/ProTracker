@@ -64,8 +64,7 @@ Specialized shop floor monitor view:
 ---
 ### DEMO
 https://protracker.puppy101.dpdns.org/
-user role and password: test/test-123
-supervisor role and password: test1/test1-123
+Ask auther for access.
 
 ---
 ## 📝 Changelog
