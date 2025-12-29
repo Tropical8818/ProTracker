@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { ArrowUp, ArrowDown, ArrowUpDown, Download } from 'lucide-react';
+import { ArrowUp, ArrowDown, ArrowUpDown, Download, Lock, Unlock } from 'lucide-react';
 import { format, isValid, parseISO } from 'date-fns';
 import type { Order } from '@/lib/excel';
 
@@ -32,6 +32,8 @@ interface Props {
     onErase?: (woId: string, step: string) => void;
     highlightedWos: string[];
     extraColumns?: string[];
+    role?: string;
+    onUpdateDetail?: (woId: string, field: string, value: string) => Promise<void>;
 }
 
 type SortDir = 'asc' | 'desc' | null;
@@ -94,7 +96,9 @@ export default function PlannerTable({
     eraseMode = false,
     onErase,
     highlightedWos = [],
-    extraColumns = []
+    extraColumns = [],
+    role,
+    onUpdateDetail
 }: Props) {
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<SortDir>(null);
@@ -108,6 +112,7 @@ export default function PlannerTable({
         startWidth: number;
         isStep: boolean;
     } | null>(null);
+    const [isSuperEditing, setIsSuperEditing] = useState(false);
 
     useEffect(() => {
         if (!resizing) return;
@@ -459,9 +464,20 @@ export default function PlannerTable({
                     <tr className="bg-slate-50 border-b border-slate-200">
                         <td
                             style={{ width: columnWidths['WO ID'] }}
-                            className="px-1 py-0.5 text-center font-bold text-amber-600 bg-slate-50 sticky left-0 z-30"
+                            className="px-1 py-0.5 text-center font-bold text-amber-600 bg-slate-50 sticky left-0 z-30 group relative"
                         >
-                            WO: {orders.length}
+                            <div className="flex items-center justify-center gap-1">
+                                <span>WO: {orders.length}</span>
+                                {role !== 'operator' && (
+                                    <button
+                                        onClick={() => setIsSuperEditing(!isSuperEditing)}
+                                        className={`p-0.5 rounded transition-colors ${isSuperEditing ? 'bg-red-100 text-red-600' : 'text-slate-300 hover:text-slate-500'}`}
+                                        title={isSuperEditing ? "Lock Super Edit" : "Unlock Super Edit (Admin Only)"}
+                                    >
+                                        {isSuperEditing ? <Unlock size={10} /> : <Lock size={10} />}
+                                    </button>
+                                )}
+                            </div>
                         </td>
                         {/* Detail Columns - Fixed 1:1 mapping (No colSpan to ensure perfect width control) */}
                         {effectiveDetailColumns.slice(1).map((col, i) => (
@@ -657,7 +673,27 @@ export default function PlannerTable({
                                         className={`px-1 py-0.5 text-slate-700 text-[9px] border-r border-slate-200 ${colIdx === 0 ? 'sticky left-0 bg-inherit z-10' : 'truncate'}`}
                                         title={value}
                                     >
-                                        {value}
+                                        {isSuperEditing && onUpdateDetail ? (
+                                            <input
+                                                type="text"
+                                                defaultValue={value}
+                                                className="w-full h-full bg-yellow-50 px-1 border border-yellow-200 rounded text-[9px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                                onBlur={(e) => {
+                                                    const newVal = e.target.value.trim();
+                                                    if (newVal !== value) {
+                                                        onUpdateDetail(order['WO ID'], col, newVal);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.currentTarget.blur();
+                                                    }
+                                                }}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        ) : (
+                                            value
+                                        )}
                                     </td>
                                 );
                             })}
