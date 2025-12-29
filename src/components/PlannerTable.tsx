@@ -525,7 +525,6 @@ export default function PlannerTable({
                                 // Priority - Fuzzy match "PRIORITY"
                                 if (colUpper.includes('PRIORITY')) {
                                     return (
-                                    return (
                                         <td key={col} className="px-1 py-0.5 text-center text-[9px] border-r border-slate-200" style={{ ...getPriorityStyle(value), width: columnWidths[col] }}>
                                             {value}
                                         </td>
