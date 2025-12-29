@@ -498,7 +498,7 @@ export default function PlannerTable({
                                     width: columnWidths[col],
                                     maxWidth: columnWidths[col] // Force max width
                                 }}
-                                className={`px-0.5 py-1 font-semibold text-slate-700 cursor-pointer hover:bg-slate-200 border-r border-slate-200 bg-slate-100 ${i === 0 ? 'sticky left-0 z-30' : ''
+                                className={`px-0.5 py-1 font-semibold text-slate-700 cursor-pointer hover:bg-slate-200 border-r border-slate-200 bg-slate-100 relative group ${i === 0 ? 'sticky left-0 z-30' : ''
                                     } ${i >= 5 ? 'text-center text-[9px]' : 'text-left text-[10px]'}`}
                                 onClick={() => handleSort(col)}
                                 title={col}
@@ -538,7 +538,7 @@ export default function PlannerTable({
                                 <th
                                     key={step}
                                     style={{ width: columnWidths[step] }}
-                                    className={`px-0.5 py-1 text-[10px] font-semibold text-slate-600 bg-slate-50 border-r border-slate-200
+                                    className={`px-0.5 py-1 text-[10px] font-semibold text-slate-600 bg-slate-50 border-r border-slate-200 relative group
                                         ${isBulkP ? 'cursor-pointer hover:bg-blue-100 ring-inset hover:ring-2 hover:ring-blue-300' : ''}
                                         ${isBulkNA ? 'cursor-pointer hover:bg-slate-200 ring-inset hover:ring-2 hover:ring-slate-400' : ''}
                                         ${isBulkHold ? 'cursor-pointer hover:bg-orange-100 ring-inset hover:ring-2 hover:ring-orange-300' : ''}
