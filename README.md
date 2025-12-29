@@ -62,7 +62,12 @@ Specialized shop floor monitor view:
 - **Clear Logs**: Admin-only function to reset history.
 
 ---
+### DEMO
+https://protracker.puppy101.dpdns.org/
+user role and password: test/test-123
+supervisor role and password: test1/test1-123
 
+---
 ## 📝 Changelog
 
 ### V6.1.3
