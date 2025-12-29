@@ -118,9 +118,10 @@ export default function PlannerTable({
             const baseWidth = Math.max(36, Math.min(80, maxLength * 8));
             return `${baseWidth}px`;
         } else {
-            // Detail columns: compact, tight fit (min 40px, no max here)
-            // Multiplier 7 is sufficient for text-[9px]/text-[10px]
-            const baseWidth = Math.max(40, maxLength * 7);
+            // Detail columns: compact, tight fit
+            // Multiplier 6 is sufficient for text-[9px] (very compact)
+            // Min 25px allows short data (like '1') to be very narrow
+            const baseWidth = Math.max(25, maxLength * 6);
             return `${baseWidth}px`;
         }
     };
