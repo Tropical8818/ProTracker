@@ -314,14 +314,18 @@ export default function PlannerTable({
         // Priority: Keep first 2 columns (WO ID, PN) dynamic, rest use small fixed widths
         effectiveDetailColumns.forEach((col, index) => {
             if (index === 0) {
-                // First column (WO ID) - dynamic, minimum 70px
-                widths[col] = calculateColumnWidth(col, processedOrders, false);
+                // First column (WO ID) - dynamic, minimum 70px, max 100px
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(100, parseInt(dynamicWidth));
+                widths[col] = `${widthValue}px`;
             } else if (index === 1) {
-                // Second column (PN) - dynamic
-                widths[col] = calculateColumnWidth(col, processedOrders, false);
+                // Second column (PN) - dynamic, max 100px
+                const dynamicWidth = calculateColumnWidth(col, processedOrders, false);
+                const widthValue = Math.min(100, parseInt(dynamicWidth));
+                widths[col] = `${widthValue}px`;
             } else {
-                // All other detail columns - use smaller fixed widths to save space for steps
-                widths[col] = '50px';  // Compact width for all other details
+                // All other detail columns - use very compact width to maximize space for steps
+                widths[col] = '40px';  // Reduced from 50px to 40px
             }
         });
 
