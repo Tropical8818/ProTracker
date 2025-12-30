@@ -36,9 +36,26 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Message is required' }, { status: 400 });
         }
 
+        // INTELLIGENT QUERY: Extract WO ID from user message if present
+        let queriedWoId: string | undefined;
+        if (message) {
+            // Match common WO ID patterns: numbers, alphanumeric with dashes, etc.
+            const woIdMatch = message.match(/\b([A-Z0-9]{2,}[-_]?[0-9]{4,}|[0-9]{6,})\b/i);
+            if (woIdMatch) {
+                queriedWoId = woIdMatch[1];
+                console.log('[AI Chat] Detected WO ID in query:', queriedWoId);
+            }
+        }
+
         // Build production context
-        const context = await buildAIContext(productId);
+        const context = await buildAIContext(productId, queriedWoId);
         const contextString = formatContextForAI(context, productId);
+
+        // DEBUG: Log context to help diagnose issues
+        console.log('[AI Chat] Product ID:', productId);
+        console.log('[AI Chat] Orders count:', context.orders.length);
+        console.log('[AI Chat] Active model:', context.activeModel);
+        console.log('[AI Chat] Context preview (first 500 chars):', contextString.substring(0, 500));
 
         // Get configurable prompts
         const config = getConfig();

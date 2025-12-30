@@ -42,7 +42,8 @@ export interface AIContext {
 }
 
 // Build context for AI from production data
-export async function buildAIContext(productId?: string): Promise<AIContext> {
+// queriedWoId: If provided, ensures this specific order is included in context even if not in top results
+export async function buildAIContext(productId?: string, queriedWoId?: string): Promise<AIContext> {
     // CRITICAL: Require productId for product line isolation
     // This prevents AI from accessing data across multiple product lines
     if (!productId) {
@@ -85,7 +86,7 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
 
     // Fetch orders - get more for better AI lookup
     const orderWhere = productId ? { productId } : {};
-    const orders = await prisma.order.findMany({
+    let orders = await prisma.order.findMany({
         where: orderWhere,
         include: {
             product: {
@@ -95,6 +96,29 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
         take: 500, // Increased for better AI order recognition
         orderBy: { updatedAt: 'desc' }
     });
+
+    // INTELLIGENT QUERY: If user queried a specific WO ID, ensure it's in the context
+    if (queriedWoId) {
+        const hasQueriedOrder = orders.some(o => o.woId === queriedWoId);
+        if (!hasQueriedOrder) {
+            // Fetch the specific order
+            const queriedOrder = await prisma.order.findFirst({
+                where: {
+                    woId: queriedWoId,
+                    productId // Ensure product line isolation
+                },
+                include: {
+                    product: {
+                        select: { name: true, config: true }
+                    }
+                }
+            });
+            if (queriedOrder) {
+                // Add to beginning of orders array for priority
+                orders = [queriedOrder, ...orders];
+            }
+        }
+    }
 
     // Process orders into summaries
     const orderSummaries: OrderSummary[] = orders.map(order => {
@@ -289,12 +313,17 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
         lines.push('');
     }
 
-    // Include Active WO IDs for lookup (limit to active to save tokens)
-    lines.push('## Active Order WO IDs');
-    const activeWoIds = context.orders
-        .filter(o => ['Active', 'P', 'WIP', 'Hold', 'QN'].includes(o.status))
-        .map(o => o.woId);
-    lines.push(activeWoIds.join(', '));
+    // LAYERED DISPLAY: Show all orders with basic info first
+    lines.push('## All Orders (Basic Info)');
+    lines.push(`Total: ${context.orders.length} orders`);
+    lines.push('');
+    lines.push('**Order List** (WO ID | Status | Current Step):');
+    for (const order of context.orders) {
+        const statusIcon = order.status === 'Completed' ? '✅' :
+            order.status === 'Hold' ? '🔴' :
+                order.status === 'QN' ? '⚠️' : '🔵';
+        lines.push(`- ${statusIcon} ${order.woId} | ${order.status} | ${order.currentStep}`);
+    }
     lines.push('');
 
     // List orders with special statuses (Hold, QN) - check from order status
@@ -323,12 +352,14 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
 
     // Detailed info for recent/active orders with COMPLETE data
     // Exclude ones we already listed in Hold/QN sections to avoid duplication
-    lines.push('## Recent Active Orders (Complete Details)');
+    lines.push('## Top 100 Orders (Complete Details)');
+    lines.push('Showing detailed information for the most recent 100 orders (including completed):');
+    lines.push('');
     let count = 0;
     for (const order of context.orders) {
-        if (count >= 15) break; // Limit to 15 detailed orders to manage token usage
-        if (listedWoIds.has(order.woId)) continue; // Skip if already listed
-        if (order.status === 'Completed') continue; // Skip completed for details (they are in stats)
+        if (count >= 100) break; // Increased to 100 for comprehensive coverage
+        if (listedWoIds.has(order.woId)) continue; // Skip if already listed in Hold/QN
+        // REMOVED: No longer skip completed orders - show all statuses
 
         // Show WO ID and product as header
         lines.push(`### ${order.woId} [${order.productName}]`);
