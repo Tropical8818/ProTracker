@@ -101,6 +101,7 @@ export default function DashboardPage() {
     const [showLogsModal, setShowLogsModal] = useState(false);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [logsNotification, setLogsNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+    const [confirmingClear, setConfirmingClear] = useState(false);
 
     // ECD settings - separate Saturday/Sunday
 
@@ -556,8 +557,12 @@ export default function DashboardPage() {
         document.body.removeChild(link);
     };
 
-    const clearLogs = async () => {
-        if (!confirm('Are you sure you want to clear ALL logs? This cannot be undone.')) return;
+    const clearLogs = () => {
+        setConfirmingClear(true);
+    };
+
+    const performClearLogs = async () => {
+        setConfirmingClear(false);
         try {
             const res = await fetch('/api/logs', { method: 'DELETE' });
             if (res.ok) {
@@ -1613,14 +1618,31 @@ export default function DashboardPage() {
                                 </button>
 
                                 {role === 'admin' && (
-                                    <button
-                                        onClick={clearLogs}
-                                        title="Clear All Logs"
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Clear
-                                    </button>
+                                    confirmingClear ? (
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={performClearLogs}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
+                                            >
+                                                Sure?
+                                            </button>
+                                            <button
+                                                onClick={() => setConfirmingClear(false)}
+                                                className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={clearLogs}
+                                            title="Clear All Logs"
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Clear
+                                        </button>
+                                    )
                                 )}
 
                                 <div className="w-px h-6 bg-slate-200 mx-1"></div>
@@ -1710,7 +1732,8 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* Barcode Scanner Modal */}
             <BarcodeScanner
@@ -1790,108 +1813,110 @@ export default function DashboardPage() {
             </div>
 
             {/* Import Orders Modal */}
-            {showImportModal && importPreview && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                <FileSpreadsheet className="w-5 h-5 text-green-600" />
-                                Import Orders
-                            </h3>
-                            <button onClick={() => { setShowImportModal(false); setImportFile(null); }} className="text-slate-400 hover:text-slate-600">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-4">
-                            <div className="grid grid-cols-3 gap-3 text-center">
-                                <div className="bg-green-50 rounded-lg p-3 border border-green-100">
-                                    <div className="text-2xl font-bold text-green-700">{importPreview.newOrders}</div>
-                                    <div className="text-xs text-green-600 font-medium uppercase tracking-wide">New</div>
-                                </div>
-                                <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
-                                    <div className="text-2xl font-bold text-blue-700">{importPreview.existingOrders}</div>
-                                    <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Skipped</div>
-                                </div>
-                                <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-                                    <div className="text-2xl font-bold text-slate-700">{importPreview.totalRows}</div>
-                                    <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Total Rows</div>
-                                </div>
+            {
+                showImportModal && importPreview && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                                    <FileSpreadsheet className="w-5 h-5 text-green-600" />
+                                    Import Orders
+                                </h3>
+                                <button onClick={() => { setShowImportModal(false); setImportFile(null); }} className="text-slate-400 hover:text-slate-600">
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
 
-                            {/* Missing Columns Warning */}
-                            {importPreview.missingColumns && importPreview.missingColumns.length > 0 && (
-                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                                    <div className="flex items-start gap-2">
-                                        <Info className="w-5 h-5 text-amber-600 mt-0.5" />
-                                        <div>
-                                            <div className="text-sm font-bold text-amber-800 mb-1">
-                                                ⚠️ Missing Columns
-                                            </div>
-                                            <div className="text-xs text-amber-700 mb-2">
-                                                The following columns from your settings were not found in this Excel file.
-                                                Data for these columns will be empty.
-                                            </div>
-                                            <div className="flex flex-wrap gap-1">
-                                                {importPreview.missingColumns.map((col: string, i: number) => (
-                                                    <span key={i} className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-medium border border-amber-200">
-                                                        {col}
-                                                    </span>
-                                                ))}
+                            <div className="p-6 space-y-4">
+                                <div className="grid grid-cols-3 gap-3 text-center">
+                                    <div className="bg-green-50 rounded-lg p-3 border border-green-100">
+                                        <div className="text-2xl font-bold text-green-700">{importPreview.newOrders}</div>
+                                        <div className="text-xs text-green-600 font-medium uppercase tracking-wide">New</div>
+                                    </div>
+                                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                                        <div className="text-2xl font-bold text-blue-700">{importPreview.existingOrders}</div>
+                                        <div className="text-xs text-blue-600 font-medium uppercase tracking-wide">Skipped</div>
+                                    </div>
+                                    <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                                        <div className="text-2xl font-bold text-slate-700">{importPreview.totalRows}</div>
+                                        <div className="text-xs text-slate-500 font-medium uppercase tracking-wide">Total Rows</div>
+                                    </div>
+                                </div>
+
+                                {/* Missing Columns Warning */}
+                                {importPreview.missingColumns && importPreview.missingColumns.length > 0 && (
+                                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                                        <div className="flex items-start gap-2">
+                                            <Info className="w-5 h-5 text-amber-600 mt-0.5" />
+                                            <div>
+                                                <div className="text-sm font-bold text-amber-800 mb-1">
+                                                    ⚠️ Missing Columns
+                                                </div>
+                                                <div className="text-xs text-amber-700 mb-2">
+                                                    The following columns from your settings were not found in this Excel file.
+                                                    Data for these columns will be empty.
+                                                </div>
+                                                <div className="flex flex-wrap gap-1">
+                                                    {importPreview.missingColumns.map((col: string, i: number) => (
+                                                        <span key={i} className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-medium border border-amber-200">
+                                                            {col}
+                                                        </span>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Success State if no missing columns and no errors */}
-                            {(!importPreview.missingColumns || importPreview.missingColumns.length === 0) && (!importPreview.validationErrors || importPreview.validationErrors.length === 0) && (
-                                <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
-                                    <Check className="w-5 h-5 text-green-600" />
-                                    <span className="text-sm text-green-700 font-medium">All configured columns found!</span>
-                                </div>
-                            )}
+                                {/* Success State if no missing columns and no errors */}
+                                {(!importPreview.missingColumns || importPreview.missingColumns.length === 0) && (!importPreview.validationErrors || importPreview.validationErrors.length === 0) && (
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+                                        <Check className="w-5 h-5 text-green-600" />
+                                        <span className="text-sm text-green-700 font-medium">All configured columns found!</span>
+                                    </div>
+                                )}
 
-                            {importPreview.validationErrors?.length > 0 && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-3 max-h-32 overflow-y-auto">
-                                    <div className="text-xs font-bold text-red-800 mb-1">Errors Found:</div>
-                                    {importPreview.validationErrors.map((err: any, i: number) => (
-                                        <div key={i} className="text-xs text-red-600">Row {err.row}: {err.error}</div>
-                                    ))}
-                                </div>
-                            )}
+                                {importPreview.validationErrors?.length > 0 && (
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 max-h-32 overflow-y-auto">
+                                        <div className="text-xs font-bold text-red-800 mb-1">Errors Found:</div>
+                                        {importPreview.validationErrors.map((err: any, i: number) => (
+                                            <div key={i} className="text-xs text-red-600">Row {err.row}: {err.error}</div>
+                                        ))}
+                                    </div>
+                                )}
 
-                            {importMsg && (
-                                <div className={`p-3 rounded-lg text-sm ${importMsg.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-                                    {importMsg.text}
-                                </div>
-                            )}
+                                {importMsg && (
+                                    <div className={`p-3 rounded-lg text-sm ${importMsg.type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
+                                        {importMsg.text}
+                                    </div>
+                                )}
 
-                            <p className="text-sm text-slate-500 text-center">
-                                Importing to <b>{selectedProduct?.name}</b>.
-                                <br />Existing orders (by WO ID) will be skipped.
-                            </p>
-                        </div>
+                                <p className="text-sm text-slate-500 text-center">
+                                    Importing to <b>{selectedProduct?.name}</b>.
+                                    <br />Existing orders (by WO ID) will be skipped.
+                                </p>
+                            </div>
 
-                        <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-slate-50">
-                            <button
-                                onClick={() => { setShowImportModal(false); setImportFile(null); }}
-                                className="flex-1 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmImport}
-                                disabled={isImporting || importPreview.newOrders === 0}
-                                className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {isImporting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                                {isImporting ? 'Importing...' : 'Confirm Import'}
-                            </button>
+                            <div className="px-6 py-4 border-t border-slate-100 flex gap-3 bg-slate-50">
+                                <button
+                                    onClick={() => { setShowImportModal(false); setImportFile(null); }}
+                                    className="flex-1 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmImport}
+                                    disabled={isImporting || importPreview.newOrders === 0}
+                                    className="flex-1 py-2.5 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isImporting ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                    {isImporting ? 'Importing...' : 'Confirm Import'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
             {/* AI Chat Panel */}
             <AIChatPanel
                 productId={selectedProductId}
@@ -1903,6 +1928,6 @@ export default function DashboardPage() {
                     }
                 }}
             />
-        </div>
+        </div >
     );
 }
