@@ -435,23 +435,6 @@ export default function SettingsPage() {
 
     return (
         <div className="min-h-screen bg-slate-50">
-            {/* Fixed Toast Notification */}
-            {message && (
-                <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
-                    <div className={`px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 ${message.type === 'success'
-                            ? 'bg-green-600 text-white'
-                            : 'bg-red-600 text-white'
-                        }`}>
-                        {message.type === 'success' ? (
-                            <Check className="w-5 h-5 flex-shrink-0" />
-                        ) : (
-                            <X className="w-5 h-5 flex-shrink-0" />
-                        )}
-                        <span className="font-medium">{message.text}</span>
-                    </div>
-                </div>
-            )}
-
             {/* Header */}
             <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
                 <div className="max-w-full mx-auto px-4 h-14 flex items-center justify-between">
@@ -1037,11 +1020,6 @@ export default function SettingsPage() {
                                     )}
 
 
-                                    {message && (
-                                        <div className={`text-sm font-medium px-4 py-2 rounded-lg inline-block ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                            {message.text}
-                                        </div>
-                                    )}
                                 </div>
                                 <button
                                     onClick={handleSave}
@@ -1051,6 +1029,19 @@ export default function SettingsPage() {
                                     <Save className="w-4 h-4" />
                                     {saving ? 'Saving...' : 'Save Settings'}
                                 </button>
+
+                                {/* Save Status Message */}
+                                {message && (
+                                    <div className={`mt-3 text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                                        }`}>
+                                        {message.type === 'success' ? (
+                                            <Check className="w-4 h-4 flex-shrink-0" />
+                                        ) : (
+                                            <X className="w-4 h-4 flex-shrink-0" />
+                                        )}
+                                        <span>{message.text}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -1378,6 +1369,19 @@ export default function SettingsPage() {
                                                 <Save className="w-4 h-4" />
                                                 {saving ? 'Saving...' : 'Save AI Prompts'}
                                             </button>
+
+                                            {/* Save Status Message */}
+                                            {message && (
+                                                <div className={`mt-3 text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                                                    }`}>
+                                                    {message.type === 'success' ? (
+                                                        <Check className="w-4 h-4 flex-shrink-0" />
+                                                    ) : (
+                                                        <X className="w-4 h-4 flex-shrink-0" />
+                                                    )}
+                                                    <span>{message.text}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
