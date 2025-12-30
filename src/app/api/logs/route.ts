@@ -29,7 +29,7 @@ export async function GET(request: Request) {
             take: limit,
             include: {
                 user: {
-                    select: { username: true }
+                    select: { username: true, employeeId: true }
                 },
                 order: {
                     select: {
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
                 action: log.action,
                 previousValue: details.previousValue || '',
                 newValue: details.newValue || '',
-                operatorId: log.user?.username || 'System'
+                operatorId: log.user?.employeeId || 'System'
             };
         });
 
