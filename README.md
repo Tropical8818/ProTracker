@@ -83,6 +83,22 @@ Visit http://localhost:3000
 
 ---
 
+### Visual Experience
+
+#### 1. The Gateway (Login)
+Stunning dark-themed login portal with the new v6.5.0 branding.
+![Login Screen](public/screenshot_login.png)
+
+#### 2. The Command Center (Dashboard)
+Comprehensive production data grid with detailed management controls.
+![Dashboard View](public/screenshot_dashboard.png)
+
+#### 3. The Control Tower (Kiosk Mode)
+Optimized for large screens, this view aligns data perfectly for shop floor visibility.
+![Kiosk Mode](public/screenshot_kiosk.png)
+
+---
+
 ### DEMO
 https://protracker.puppy101.dpdns.org/
 Contact author for access: mailto: jkdb0g@whatifthenhow.com

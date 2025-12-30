@@ -83,6 +83,22 @@ npm run dev
 
 ---
 
+### 📸 视觉体验
+
+#### 1. 入口 (Login)
+令人惊艳的深色主题登录界面，采用全新的 v6.5.0 品牌标识。
+![Login Screen](public/screenshot_login.png)
+
+#### 2. 指挥中心 (Dashboard)
+全面的生产数据网格，具有详细的管理控制功能。
+![Dashboard View](public/screenshot_dashboard.png)
+
+#### 3. 控制塔 (Kiosk Mode)
+专为大屏幕优化，此视图完美展示车间所需的数据可见性。
+![Kiosk Mode](public/screenshot_kiosk.png)
+
+---
+
 ### 演示 (DEMO)
 https://protracker.puppy101.dpdns.org/
 联系作者获取访问权限: mailto: jkdb0g@whatifthenhow.com
