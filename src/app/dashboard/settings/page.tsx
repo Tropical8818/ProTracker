@@ -161,6 +161,14 @@ export default function SettingsPage() {
         fetchWatcherStatus(); // Check watcher status on mount
     }, []);
 
+    // Auto-dismiss messages after 4 seconds
+    useEffect(() => {
+        if (message) {
+            const timer = setTimeout(() => setMessage(null), 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [message]);
+
     const fetchModels = async (providerOverride?: string) => {
         setLoadingModels(true);
         try {
@@ -426,7 +434,24 @@ export default function SettingsPage() {
     const isSupervisor = currentUser?.role === 'supervisor';
 
     return (
-        <div className="min-h-screen bg-slate-100">
+        <div className="min-h-screen bg-slate-50">
+            {/* Fixed Toast Notification */}
+            {message && (
+                <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 fade-in duration-300">
+                    <div className={`px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 ${message.type === 'success'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-red-600 text-white'
+                        }`}>
+                        {message.type === 'success' ? (
+                            <Check className="w-5 h-5 flex-shrink-0" />
+                        ) : (
+                            <X className="w-5 h-5 flex-shrink-0" />
+                        )}
+                        <span className="font-medium">{message.text}</span>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <header className="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-50">
                 <div className="max-w-full mx-auto px-4 h-14 flex items-center justify-between">
