@@ -7,6 +7,9 @@ export interface OrderSummary {
     status: string;
     ecd: string;
     daysInCurrentStep: number;
+    // Complete order data for AI analysis
+    details: Record<string, string>; // All detail columns (PN, Description, WO DUE, Priority, etc.)
+    stepValues: Record<string, string>; // All step values (dates, statuses)
 }
 
 export interface ProductionStats {
@@ -92,6 +95,19 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
         const data = JSON.parse(order.data || '{}');
         const config = JSON.parse(order.product.config || '{}');
         const steps = config.steps || [];
+        const detailColumns = config.detailColumns || [];
+
+        // Extract all detail columns for AI analysis
+        const details: Record<string, string> = {};
+        for (const col of detailColumns) {
+            details[col] = data[col] || '';
+        }
+
+        // Extract all step values for AI analysis
+        const stepValues: Record<string, string> = {};
+        for (const step of steps) {
+            stepValues[step] = data[step] || '';
+        }
 
         // First, scan ALL steps for Hold/QN/DIFA (blocking statuses have priority)
         let holdStep = '';
@@ -114,7 +130,9 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
                 currentStep: holdStep,
                 status: 'Hold',
                 ecd: data['ECD'] || '',
-                daysInCurrentStep: 0
+                daysInCurrentStep: 0,
+                details,
+                stepValues
             };
         }
 
@@ -126,7 +144,9 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
                 currentStep: qnStep,
                 status: 'QN',
                 ecd: data['ECD'] || '',
-                daysInCurrentStep: 0
+                daysInCurrentStep: 0,
+                details,
+                stepValues
             };
         }
 
@@ -157,7 +177,9 @@ export async function buildAIContext(productId?: string): Promise<AIContext> {
             currentStep,
             status,
             ecd: data['ECD'] || '',
-            daysInCurrentStep: 0 // Could calculate from logs
+            daysInCurrentStep: 0, // Could calculate from logs
+            details,
+            stepValues
         };
     });
 
@@ -269,17 +291,42 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
         lines.push('');
     }
 
-    // Detailed info for recent/active orders (Pruned)
+    // Detailed info for recent/active orders with COMPLETE data
     // Exclude ones we already listed in Hold/QN sections to avoid duplication
-    lines.push('## Recent Active Orders (Details)');
+    lines.push('## Recent Active Orders (Complete Details)');
     let count = 0;
     for (const order of context.orders) {
-        if (count >= 20) break; // Limit to 20 detailed orders
+        if (count >= 15) break; // Limit to 15 detailed orders to manage token usage
         if (listedWoIds.has(order.woId)) continue; // Skip if already listed
         if (order.status === 'Completed') continue; // Skip completed for details (they are in stats)
 
-        const ecdInfo = order.ecd ? `, ECD: ${order.ecd}` : '';
-        lines.push(`- ${order.woId} [${order.productName}]: Step=${order.currentStep}, Status=${order.status}${ecdInfo}`);
+        // Show WO ID and product as header
+        lines.push(`### ${order.woId} [${order.productName}]`);
+        lines.push(`Status: ${order.status}, Current Step: ${order.currentStep}`);
+
+        // Show all detail columns
+        if (Object.keys(order.details).length > 0) {
+            lines.push('Details:');
+            for (const [key, value] of Object.entries(order.details)) {
+                if (value) lines.push(`  - ${key}: ${value}`);
+            }
+        }
+
+        // Show step progress
+        if (Object.keys(order.stepValues).length > 0) {
+            lines.push('Steps:');
+            for (const [step, value] of Object.entries(order.stepValues)) {
+                if (value) {
+                    // Format dates nicely, keep statuses as-is
+                    const displayValue = /\d{4}-\d{2}-\d{2}/.test(value)
+                        ? value.split('T')[0]
+                        : value;
+                    lines.push(`  - ${step}: ${displayValue}`);
+                }
+            }
+        }
+
+        lines.push(''); // Blank line between orders
         count++;
     }
     lines.push('');
