@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 import * as path from 'path';
 import { getSession } from '@/lib/auth';
-import { getProductById, updateConfig, getConfig } from '@/lib/config';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
     const session = await getSession();
@@ -21,14 +21,21 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'productId is required' }, { status: 400 });
         }
 
-        const product = getProductById(productId);
-        if (!product) {
+        // Query product from Prisma database (instead of config file)
+        const dbProduct = await prisma.product.findUnique({
+            where: { id: productId }
+        });
+
+        if (!dbProduct) {
             return NextResponse.json({ error: 'Product not found' }, { status: 404 });
         }
 
+        // Parse the JSON config stored in the product record
+        const productConfig = JSON.parse(dbProduct.config);
+
         // Build column headers: Title row (empty) + Headers row
-        const detailColumns = product.detailColumns || ['WO ID', 'PN', 'Description', 'WO DUE', 'Priority'];
-        const stepColumns = product.steps || [];
+        const detailColumns = productConfig.detailColumns || ['WO ID', 'PN', 'Description', 'WO DUE', 'Priority'];
+        const stepColumns = productConfig.steps || [];
         const allColumns = [...detailColumns, ...stepColumns];
 
         if (allColumns.length === 0) {
@@ -42,7 +49,7 @@ export async function POST(request: NextRequest) {
         // Row 1: Headers
         // Row 2+: Data rows (empty for template)
         const wsData = [
-            [product.name + ' - Production Schedule'], // Title row
+            [dbProduct.name + ' - Production Schedule'], // Title row
             allColumns, // Header row
             Array(allColumns.length).fill(''), // Empty data row (placeholder)
         ];
@@ -61,7 +68,7 @@ export async function POST(request: NextRequest) {
         if (!finalPath) {
             // Default to data directory with product name
             const dataDir = process.env.DATA_DIR || path.join(process.cwd(), 'data');
-            const safeName = product.name.replace(/[^a-zA-Z0-9]/g, '_');
+            const safeName = dbProduct.name.replace(/[^a-zA-Z0-9]/g, '_');
             finalPath = path.join(dataDir, `${safeName}_template.xlsx`);
         }
 
@@ -75,15 +82,12 @@ export async function POST(request: NextRequest) {
         const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
         fs.writeFileSync(finalPath, buffer);
 
-        // Update product config with the new excelPath
-        const config = getConfig();
-        const updatedProducts = config.products.map(p => {
-            if (p.id === productId) {
-                return { ...p, excelPath: finalPath };
-            }
-            return p;
+        // Update product config in Prisma database with the new excelPath
+        const updatedConfig = { ...productConfig, excelPath: finalPath };
+        await prisma.product.update({
+            where: { id: productId },
+            data: { config: JSON.stringify(updatedConfig) }
         });
-        updateConfig({ products: updatedProducts });
 
         return NextResponse.json({
             success: true,

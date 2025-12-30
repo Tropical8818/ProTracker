@@ -511,7 +511,7 @@ export default function KioskPage() {
             <footer className="h-10 bg-[#070709] border-t border-slate-900 px-6 flex items-center justify-between text-[10px] uppercase tracking-[0.3em] font-black text-slate-600">
                 <div className="flex items-center gap-4">
                     <Layers className="w-3 h-3" />
-                    <span>SYSTEM CORE V6.4.0</span>
+                    <span>SYSTEM CORE V6.5.0</span>
                 </div>
                 <div className="flex items-center gap-6">
                     <span className="text-indigo-900 animate-pulse">RECEPTION LINK ACTIVE</span>

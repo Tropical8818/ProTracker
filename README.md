@@ -88,6 +88,7 @@ Contact author for access: mailto: jkdb0g@whatifthenhow.com
 ---
 
 ## 📝 Changelog highlights
+*   **v6.5.0**: Docker Production Support (Node 22, Fixed Watcher, CVE Remediation).
 *   **v6.4.0**: Added Order Deletion & Kiosk Alignment fixes.
 *   **v6.3.0**: Introduced Super Edit Mode.
 *   **v6.1.0**: Launched Professional Kiosk Mode.

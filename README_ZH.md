@@ -88,6 +88,7 @@ https://protracker.puppy101.dpdns.org/
 ---
 
 ## 📝 更新日志摘要
+*   **v6.5.0**: Docker 生产环境就绪 (Node 22, Watcher 修复, CVE 修复).
 *   **v6.4.0**: 新增工单删除功能 & 看板对齐修复。
 *   **v6.3.0**: 引入超级编辑模式 (Super Edit)。
 *   **v6.1.0**: 发布专业电子看板模式 (Kiosk Mode)。
