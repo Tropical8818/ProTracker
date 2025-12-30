@@ -33,21 +33,27 @@ async function checkAndSeed() {
         const adminUsername = process.env.ADMIN_USERNAME || 'admin';
         const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
         
+        let employeeId = adminUsername;
+        // CRITICAL: superadmin must have employeeId 'SUPER001' to bypass permission checks
+        if (adminUsername === 'superadmin') {
+            employeeId = 'SUPER001';
+        }
+
         const existingUser = await prisma.user.findUnique({ where: { username: adminUsername } });
         
         if (!existingUser) {
-            console.log(`📝 Creating admin user: ${adminUsername}...`);
+            console.log(`📝 Creating admin user: ${adminUsername} (ID: ${employeeId})...`);
             const hash = await bcrypt.hash(adminPassword, 10);
             await prisma.user.create({
                 data: {
                     username: adminUsername,
                     passwordHash: hash,
-                    employeeId: adminUsername,
+                    employeeId: employeeId,
                     role: 'admin',
                     status: 'approved'
                 }
             });
-            console.log(`✅ Admin created! Username: ${adminUsername}, Password: ${adminPassword}`);
+            console.log(`✅ Admin created! Username: ${adminUsername}, ID: ${employeeId}`);
         } else {
             console.log(`✅ Admin user "${adminUsername}" already exists.`);
         }

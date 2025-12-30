@@ -41,8 +41,8 @@ docker run -d \
   -e DATABASE_URL="file:/app/data/db/prod.db" \
   -e NEXTAUTH_SECRET="your-secret-key-change-this" \
   -e NEXTAUTH_URL="http://localhost:3000" \
-  -e ADMIN_USERNAME="admin" \
-  -e ADMIN_PASSWORD="admin123" \
+  -e ADMIN_USERNAME="superadmin" \
+  -e ADMIN_PASSWORD="superadmin123" \
   $IMAGE_NAME:latest
 
 echo "✅ Deployment complete! App running at http://localhost:3000"
