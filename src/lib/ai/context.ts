@@ -249,15 +249,27 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
     lines.push(`- Hold/QN: ${context.stats.totalHold}`);
     lines.push('');
 
-    lines.push('## Product Lines');
+    lines.push('## Product Lines & Data Structure');
     for (const product of context.products) {
-        lines.push(`- ${product.name}: ${product.steps.join(' → ')}`);
+        const config = (product as any).config || {};
+        const detailCols = config.detailColumns || [];
+
+        lines.push(`### ${product.name}`);
+
+        // Show detail columns (static order info)
+        if (detailCols.length > 0) {
+            lines.push(`**Detail Columns** (Static Order Info): ${detailCols.join(', ')}`);
+        }
+
+        // Show process steps (progress tracking)
+        lines.push(`**Process Steps** (in sequence): ${product.steps.join(' → ')}`);
+
         // Only show custom instructions for the active product to save tokens
         if (product.customInstructions && (!activeProductId || product.id === activeProductId)) {
             lines.push(`  > AI Note: ${product.customInstructions}`);
         }
+        lines.push('');
     }
-    lines.push('');
 
     // Include Active WO IDs for lookup (limit to active to save tokens)
     lines.push('## Active Order WO IDs');
