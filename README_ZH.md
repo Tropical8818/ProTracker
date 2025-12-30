@@ -87,15 +87,23 @@ npm run dev
 
 #### 1. 入口 (Login)
 令人惊艳的深色主题登录界面，采用全新的 v6.5.0 品牌标识。
-![Login Screen](public/screenshot_login.png)
+![Login Screen](public/screenshots/login.png)
 
 #### 2. 指挥中心 (Dashboard)
 全面的生产数据网格，具有详细的管理控制功能。
-![Dashboard View](public/screenshot_dashboard.png)
+![Dashboard View](public/screenshots/dashboard.png)
 
 #### 3. 控制塔 (Kiosk Mode)
 专为大屏幕优化，此视图完美展示车间所需的数据可见性。
-![Kiosk Mode](public/screenshot_kiosk.png)
+![Kiosk Mode](public/screenshots/kiosk.png)
+
+#### 4. AI 智能助手 (Production Copilot)
+基于大语言模型的实时风险分析与数据洞察。
+![AI Chat Interface](public/screenshots/ai-chat.png)
+
+#### 5. 一线作业 (Mobile Worker View)
+专为车间操作员设计的简化触控界面。
+<img src="public/screenshots/worker-mobile.png" width="300" alt="Worker Mobile View">
 
 ---
 

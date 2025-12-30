@@ -87,15 +87,23 @@ Visit http://localhost:3000
 
 #### 1. The Gateway (Login)
 Stunning dark-themed login portal with the new v6.5.0 branding.
-![Login Screen](public/screenshot_login.png)
+![Login Screen](public/screenshots/login.png)
 
 #### 2. The Command Center (Dashboard)
 Comprehensive production data grid with detailed management controls.
-![Dashboard View](public/screenshot_dashboard.png)
+![Dashboard View](public/screenshots/dashboard.png)
 
 #### 3. The Control Tower (Kiosk Mode)
 Optimized for large screens, this view aligns data perfectly for shop floor visibility.
-![Kiosk Mode](public/screenshot_kiosk.png)
+![Kiosk Mode](public/screenshots/kiosk.png)
+
+#### 4. The AI Assistant (Production Copilot)
+Real-time risk analysis and data insights powered by LLMs.
+![AI Chat Interface](public/screenshots/ai-chat.png)
+
+#### 5. The Frontline (Mobile Worker View)
+Simplified, touch-friendly interface for operators on the floor.
+<img src="public/screenshots/worker-mobile.png" width="300" alt="Worker Mobile View">
 
 ---
 
