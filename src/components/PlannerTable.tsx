@@ -472,11 +472,11 @@ export default function PlannerTable({
                         >
                             <div className="flex items-center justify-center gap-1">
                                 <span>WO: {orders.length}</span>
-                                {role !== 'operator' && (
+                                {(role === 'admin' || role === 'supervisor') && (
                                     <button
                                         onClick={() => setIsSuperEditing(!isSuperEditing)}
                                         className={`p-0.5 rounded transition-colors ${isSuperEditing ? 'bg-red-100 text-red-600' : 'text-slate-300 hover:text-slate-500'}`}
-                                        title={isSuperEditing ? "Lock Super Edit" : "Unlock Super Edit (Admin Only)"}
+                                        title={isSuperEditing ? "Lock Super Edit" : "Unlock Super Edit (Admin/Supervisor Only)"}
                                     >
                                         {isSuperEditing ? <Unlock size={10} /> : <Lock size={10} />}
                                     </button>
