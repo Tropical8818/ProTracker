@@ -39,8 +39,6 @@ docker run -d \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/public/uploads:/app/public/uploads \
   -e DATABASE_URL="file:/app/data/db/prod.db" \
-  -e NEXTAUTH_SECRET="your-secret-key-change-this" \
-  -e NEXTAUTH_URL="http://localhost:3000" \
   $IMAGE_NAME:latest
 
 echo "✅ Deployment complete! App running at http://localhost:3000"

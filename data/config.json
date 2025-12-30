@@ -36,8 +36,9 @@
     "ADMIN_PASSWORD": "dhe-admin",
     "includeSaturday": false,
     "includeSunday": false,
-    "aiProvider": "openai",
+    "aiProvider": "ollama",
     "ollamaUrl": "http://localhost:11434/v1",
     "ollamaModel": "llama3.1",
-    "includeWeekends": false
+    "includeWeekends": false,
+    "systemPrompt": ""
 }
