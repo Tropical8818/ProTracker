@@ -353,12 +353,12 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
 
     // Detailed info for recent/active orders with COMPLETE data
     // Exclude ones we already listed in Hold/QN sections to avoid duplication
-    lines.push('## Top 100 Orders (Complete Details)');
-    lines.push('Showing detailed information for the most recent 100 orders (including completed):');
+    lines.push('## Top 50 Orders (Complete Details)');
+    lines.push('Showing detailed information for the most recent 50 orders (including completed):');
     lines.push('');
     let count = 0;
     for (const order of context.orders) {
-        if (count >= 100) break; // Increased to 100 for comprehensive coverage
+        if (count >= 50) break; // Optimized to 50 to save tokens
         if (listedWoIds.has(order.woId)) continue; // Skip if already listed in Hold/QN
         // REMOVED: No longer skip completed orders - show all statuses
 
