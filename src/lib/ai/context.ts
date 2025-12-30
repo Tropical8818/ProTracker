@@ -100,23 +100,45 @@ export async function buildAIContext(productId?: string, queriedWoId?: string): 
 
     // INTELLIGENT QUERY: If user queried a specific WO ID, ensure it's in the context
     if (queriedWoId) {
+        // Strategy 1: Check if already in the fetched list (Exact match)
         const hasQueriedOrder = orders.some(o => o.woId === queriedWoId);
+
         if (!hasQueriedOrder) {
-            // Fetch the specific order
-            const queriedOrder = await prisma.order.findFirst({
-                where: {
-                    woId: queriedWoId,
-                    productId // Ensure product line isolation
-                },
-                include: {
-                    product: {
-                        select: { name: true, config: true }
-                    }
-                }
+            let queriedOrder = null;
+
+            // Strategy 2: Database Exact Match
+            queriedOrder = await prisma.order.findFirst({
+                where: { woId: queriedWoId, productId },
+                include: { product: { select: { name: true, config: true } } }
             });
+
+            // Strategy 3: Fuzzy Match (Contains) - e.g. "6668" -> "6000856668"
+            if (!queriedOrder && queriedWoId.length >= 4) {
+                console.log(`[AI Context] Intelligent Query: Trying fuzzy match for "${queriedWoId}"`);
+                queriedOrder = await prisma.order.findFirst({
+                    where: { woId: { contains: queriedWoId }, productId },
+                    include: { product: { select: { name: true, config: true } } }
+                });
+            }
+
+            // Strategy 4: Numeric Match - e.g. "WO-1234" -> "1234" or "1234" -> "WO-1234"
+            if (!queriedOrder) {
+                const numericPart = queriedWoId.replace(/\D/g, '');
+                if (numericPart.length >= 4 && numericPart !== queriedWoId) {
+                    console.log(`[AI Context] Intelligent Query: Trying numeric match for "${numericPart}"`);
+                    queriedOrder = await prisma.order.findFirst({
+                        where: { woId: { contains: numericPart }, productId },
+                        include: { product: { select: { name: true, config: true } } }
+                    });
+                }
+            }
+
             if (queriedOrder) {
                 // Add to beginning of orders array for priority
+                console.log(`[AI Context] Found order via Intelligent Query: ${queriedOrder.woId}`);
                 orders = [queriedOrder, ...orders];
+            } else {
+                console.log(`[AI Context] Intelligent Query failed to find order: "${queriedWoId}"`);
             }
         }
     }
