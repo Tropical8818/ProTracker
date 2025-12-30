@@ -30,30 +30,31 @@ const bcrypt = require('bcryptjs');
 async function checkAndSeed() {
     const prisma = new PrismaClient();
     try {
-        const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-        const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+        // SIMPLIFICATION: SuperAdmin identity is FIXED to ensure permissions work.
+        // User can only configure the password.
+        const adminPassword = process.env.ADMIN_PASSWORD || 'superadmin123';
         
-        let employeeId = adminUsername;
-        // CRITICAL: superadmin must have employeeId 'SUPER001' to bypass permission checks
-        if (adminUsername === 'superadmin') {
-            employeeId = 'SUPER001';
-        }
+        const username = 'superadmin';
+        const employeeId = 'SUPER001';
 
-        const existingUser = await prisma.user.findUnique({ where: { username: adminUsername } });
+        const existingUser = await prisma.user.findUnique({ where: { username } });
         
         if (!existingUser) {
-            console.log(`📝 Creating admin user: ${adminUsername} (ID: ${employeeId})...`);
+            console.log(`📝 Initializing System SuperAdmin...`);
+            console.log(`   Username: ${username}`);
+            console.log(`   Employee ID: ${employeeId} (REQUIRED FOR LOGIN)`);
+            
             const hash = await bcrypt.hash(adminPassword, 10);
             await prisma.user.create({
                 data: {
-                    username: adminUsername,
+                    username,
                     passwordHash: hash,
-                    employeeId: employeeId,
+                    employeeId,
                     role: 'admin',
                     status: 'approved'
                 }
             });
-            console.log(`✅ Admin created! Username: ${adminUsername}, ID: ${employeeId}`);
+            console.log(`✅ SuperAdmin created! Login ID: ${employeeId}`);
         } else {
             console.log(`✅ Admin user "${adminUsername}" already exists.`);
         }
