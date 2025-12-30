@@ -125,5 +125,12 @@ https://protracker.puppy101.dpdns.org/
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/Tropical8818/ProTracker?style=social)](https://github.com/Tropical8818/ProTracker)
 
+## 💝 支持本项目
+如果您觉得 ProTracker 对您有帮助，欢迎打赏支持项目开发：
+
+**比特币 (BTC)**: `bc6kx2h8kkgyhz9f84w7cvq5l7`
+
+您的支持将帮助维护和改进这个开源项目。感谢！🙏
+
 ## 📈 Git 趋势 (Git Trend)
 [![Star History Chart](https://api.star-history.com/svg?repos=Tropical8818/ProTracker&type=Date)](https://star-history.com/#Tropical8818/ProTracker&Date)
