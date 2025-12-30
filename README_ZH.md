@@ -128,7 +128,7 @@ https://protracker.puppy101.dpdns.org/
 ## 💝 支持本项目
 如果您觉得 ProTracker 对您有帮助，欢迎打赏支持项目开发：
 
-**比特币 (BTC)**: `bc6kx2h8kkgyhz9f84w7cvq5l7`
+**比特币 (BTC)**: `bc1q7fa9vkkqx27w6y6kx2h8kkgyhz9f84w7cvq5l7`
 
 您的支持将帮助维护和改进这个开源项目。感谢！🙏
 
