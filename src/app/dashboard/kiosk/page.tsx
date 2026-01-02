@@ -8,6 +8,7 @@ import {
     LayoutList, Maximize2, LogOut
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { APP_VERSION } from '@/lib/version';
 
 interface Order {
     id: string;
@@ -511,7 +512,7 @@ export default function KioskPage() {
             <footer className="h-10 bg-[#070709] border-t border-slate-900 px-6 flex items-center justify-between text-[10px] uppercase tracking-[0.3em] font-black text-slate-600">
                 <div className="flex items-center gap-4">
                     <Layers className="w-3 h-3" />
-                    <span>SYSTEM CORE V6.6.0</span>
+                    <span>SYSTEM CORE {APP_VERSION}</span>
                 </div>
                 <div className="flex items-center gap-6">
                     <span className="text-indigo-900 animate-pulse">RECEPTION LINK ACTIVE</span>

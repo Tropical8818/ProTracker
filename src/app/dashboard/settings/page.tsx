@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Factory, Table2, HardHat, Settings, LogOut, Save, FileSpreadsheet, Lock, Plus, Trash2, Edit2, X, ChevronUp, ChevronDown, Package, RefreshCw, Check, Eye, EyeOff, Clock, FilePlus, Info, User, Key, Users, Database, Download, Bot, Sparkles, Monitor, Play } from 'lucide-react';
+import { APP_VERSION } from '@/lib/version';
 
 interface Product {
     id: string;
@@ -452,7 +453,7 @@ export default function SettingsPage() {
                         <div className="bg-indigo-600 p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.6.0</span></h1>
+                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">{APP_VERSION}</span></h1>
                     </button>
 
                     <nav className="flex items-center gap-2">
