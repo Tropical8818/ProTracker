@@ -36,30 +36,44 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Message is required' }, { status: 400 });
         }
 
-        // INTELLIGENT QUERY: Extract WO ID from user message if present
+        // INTELLIGENT QUERY: Extract WO ID or Employee ID from user message if present
         let queriedWoId: string | undefined;
+        let queriedEmployeeId: string | undefined;
+
         if (message) {
             // 1. Explicit prefix match (Strongest signal) e.g., "WO 123", "Order #456", "工单 789"
             const explicitMatch = message.match(/(?:WO|Order|工单)[\s#.:-]*([A-Za-z0-9-]+)/i);
-
             if (explicitMatch) {
                 queriedWoId = explicitMatch[1];
             } else {
                 // 2. Pattern match (Heuristic) e.g., "6000856668", "WO-1234"
-                // Match at least 4 digits, or alphanumeric with minimal structure
                 const patternMatch = message.match(/\b([A-Z0-9]{2,}[-_]?[0-9]{3,}|[0-9]{4,})\b/i);
                 if (patternMatch) {
+                    // Start with assuming it is WO
                     queriedWoId = patternMatch[1];
                 }
             }
 
-            if (queriedWoId) {
-                console.log('[AI Chat] Detected WO ID in query:', queriedWoId);
+            // 3. Employee ID Pattern: 4 digits (e.g., "2222", "8821")
+            // Context heuristic: If user asks "what did 2222 do?", 2222 is likely an Employee ID
+            // We look for 4-digit sequences that are NOT part of a larger number (like a year 2026 or a WO 6000...)
+            // But wait, "2222" could be part of 60002222.
+            // Strict regex: \b\d{4}\b.
+            // Risk: 2026 (year). We might match year.
+            // Heuristic: If it matches "2222", likely employee. If "202[0-9]", likely year.
+            const employeeMatch = message.match(/\b(?!(?:19|20)\d{2}\b)(\d{4})\b/);
+            if (employeeMatch) {
+                queriedEmployeeId = employeeMatch[1];
+                console.log('[AI Chat] Detected Employee ID in query:', queriedEmployeeId);
             }
         }
 
+        if (queriedWoId) {
+            console.log('[AI Chat] Detected WO ID in query:', queriedWoId);
+        }
+
         // Build production context
-        const context = await buildAIContext(productId, queriedWoId);
+        const context = await buildAIContext(productId, queriedWoId, queriedEmployeeId);
         const contextString = formatContextForAI(context, productId);
 
         // DEBUG: Log context to help diagnose issues

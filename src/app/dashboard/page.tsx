@@ -21,6 +21,7 @@ import DraggableMenu from '@/components/DraggableMenu';
 import type { Order } from '@/lib/excel';
 import dynamic from 'next/dynamic';
 import AIChatPanel from '@/components/AIChatPanel';
+import { MessageNotification } from '@/components/MessageNotification';
 import { calculateECD } from '@/lib/ecd';
 
 // Dynamic import for barcode scanner (client-only)
@@ -710,7 +711,7 @@ export default function DashboardPage() {
                         <div className="bg-indigo-600 p-2 rounded-lg">
                             <Factory className="w-5 h-5 text-white" />
                         </div>
-                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V6.6.0</span></h1>
+                        <h1 className="text-lg font-bold text-slate-900">ProTracker <span className="text-indigo-600 text-xs ml-1">V7.0.0</span></h1>
                         <div className="hidden sm:block text-sm text-slate-500 border-l border-slate-200 pl-3">
                             {currentDate}
                         </div>
@@ -971,8 +972,6 @@ export default function DashboardPage() {
                                 {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
                             </button>
 
-
-
                             <button
                                 onClick={() => router.push('/dashboard/settings')}
                                 className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg text-sm font-medium"
@@ -980,9 +979,12 @@ export default function DashboardPage() {
                                 <Settings className="w-4 h-4" />
                                 <span className="hidden sm:inline">Settings</span>
                             </button>
-
-
                         </nav>
+
+                        {/* Message Notification - Outside nav to avoid overflow clipping */}
+                        <div className="hidden md:block mx-2">
+                            <MessageNotification />
+                        </div>
 
                         {/* Fixed Actions (Info, Logout) */}
                         <div className="flex items-center gap-1 shrink-0 ml-1 border-l border-slate-200 pl-2">
@@ -1608,44 +1610,6 @@ export default function DashboardPage() {
                                 Operation Logs
                             </h3>
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={downloadLogsCSV}
-                                    title="Download CSV"
-                                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    CSV
-                                </button>
-
-                                {role === 'admin' && (
-                                    confirmingClear ? (
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={performClearLogs}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors shadow-sm"
-                                            >
-                                                Sure?
-                                            </button>
-                                            <button
-                                                onClick={() => setConfirmingClear(false)}
-                                                className="px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={clearLogs}
-                                            title="Clear All Logs"
-                                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                            Clear
-                                        </button>
-                                    )
-                                )}
-
-                                <div className="w-px h-6 bg-slate-200 mx-1"></div>
 
                                 <button onClick={() => setShowLogsModal(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
                                     <X className="w-6 h-6" />

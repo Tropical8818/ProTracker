@@ -1,0 +1,76 @@
+const { buildAIContext, formatContextForAI } = require('../src/lib/ai/context');
+const { prisma } = require('../src/lib/prisma');
+const { MORNING_REPORT_PROMPT } = require('../src/lib/ai/prompts');
+
+// Mock Prisma for the script context if needed, but we can just rely on ts-node to run the real thing if we fix imports.
+// Actually, let's use the pure JS approach again to avoid TS config issues in scripts folder.
+// But wait, `buildAIContext` is in a TS file. I can't require it directly in a JS script without compilation.
+// Im going to try running this as a TS script with ts-node, hoping the relative imports work now that I know there's a path issue.
+// Ah, `context.ts` uses alias `@/lib/prisma`. That will fail in `ts-node` without tsconfig-paths.
+// Plan B: I will create a simple internal API route TEST file by just creating a new route file that I can call via curl? 
+// No, simpler: I'll modify the existing `context.ts` temporarily to log errors extensively.
+// Actually, I can use `ts-node -r tsconfig-paths/register` if installed. 
+// Let's try to just debug via adding console.logs in the actual `context.ts` file and asking user (or simulating) again?
+// No, I need to reproduce it myself.
+// I will create a TS script in `scripts/` and try to run it with `npx ts-node -r tsconfig-paths/register`.
+// If that fails, I'll fallback to reading logs.
+
+async function main() {
+    console.log('Testing Morning Report Context Build...');
+    
+    // We need a productId
+    const product = await prisma.product.findFirst();
+    if (!product) {
+        console.error('No product found');
+        return;
+    }
+    console.log('Using Product:', product.name);
+
+    try {
+        const context = await buildAIContext(product.id);
+        console.log('Context built successfully!');
+        if (context.activeIssues) {
+            console.log('Active Issues found:', context.activeIssues.length);
+        } else {
+            console.log('No activeIssues field? Interface might be updated but implementation failed?');
+        }
+    } catch (error) {
+        console.error('ERROR in buildAIContext:', error);
+    }
+}
+
+// Mocking the imports since we can't easily import from src in a standalone script without alias support
+// Wait, I can't really run `buildAIContext` easily if it has complex imports.
+// I will try to inspect the code in `context.ts` very carefully for potential runtime errors.
+// Look at the `activeOrderComments` filtering logic.
+
+/*
+    const activeIssues = activeOrderComments.filter(c => {
+        const data = JSON.parse(c.order.data || '{}');
+        const config = JSON.parse((productData.find(p => p.id === productId) as any).config || '{}');
+        // ...
+    });
+*/
+
+// Error Candidate 1: `productData` is defined earlier in the function but is it available in this scope?
+// Yes, `const productData = ...`.
+// Error Candidate 2: `productId` is passed as argument.
+// Error Candidate 3: `productData.find(...)` might return undefined if productId is not in the list?
+// But we fetched ALL products.
+// Error Candidate 4: `(productData.find(...) as any).config`. The `productData` map returns an object with `config` property (which is the parsed JSON object, NOT string).
+// In `start` of function:
+/*
+    const productData = products.map(p => {
+        const config = JSON.parse(p.config || '{}');
+        return {
+            ...
+            config // This is the PARSED OBJECT
+        };
+    });
+*/
+// But in the filter logic I wrote:
+/*
+    const config = JSON.parse((productData.find(p => p.id === productId) as any).config || '{}');
+*/
+// IF `config` is ALREADY an object, `JSON.parse` on an object will [object Object] -> fail or unexpected token.
+// THIS IS LIKELY THE BUG! `productData[].config` is already parsed in line 64/70.

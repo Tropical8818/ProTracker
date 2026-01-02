@@ -20,6 +20,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   logs          OperationLog[]
+  comments      Comment[]
 }
 
 model Product {
@@ -40,9 +41,11 @@ model Order {
   productId     String
   product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   data          String    // JSON: Dynamic field values { "Step1": "Done", "Step2": "WIP", "Received": "2024-..." }
+  commentStats  String?   // JSON: Cached statistics {"焊接": {"total": 3, "unread": 1}}
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   logs          OperationLog[]
+  comments      Comment[]
 
   @@unique([productId, woId]) // WO ID must be unique within a product line
 }
@@ -61,4 +64,27 @@ model OperationLog {
 
   // Denormalized fields for easier history viewing if user/order is deleted
   snapshot      String?   // JSON snapshot of relevant info
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  content         String
+  orderId         String
+  order           Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  stepName        String    // The specific step this comment belongs to
+  category        String    @default("GENERAL") // MATERIAL_SHORTAGE | EQUIPMENT_FAILURE | QUALITY_ISSUE | GENERAL
+  structuredData  String?   // JSON: Category-specific structured data
+  note            String?   // Optional free-text supplement
+  triggeredStatus String?   // HOLD | QN | null
+  replyToId       String?   // Reply threading
+  replyTo         Comment?  @relation("CommentReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies         Comment[] @relation("CommentReplies")
+  mentionedUserIds String?  // JSON: ["userId1", "userId2"]
+  readBy          String?   // JSON: ["userId1", "userId2"]
+  createdAt       DateTime  @default(now())
+  
+  @@index([orderId, stepName])
+  @@index([userId, createdAt])
 }

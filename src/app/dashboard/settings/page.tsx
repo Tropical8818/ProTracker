@@ -18,6 +18,8 @@ interface Product {
     aiModel?: string;
     customInstructions?: string;
     aiProvider?: 'openai' | 'ollama';
+    aiVisibleColumns?: string[];
+    aiVisibleSteps?: string[];
 }
 
 interface Config {
@@ -78,7 +80,11 @@ const NEW_PRODUCT_TEMPLATE: Omit<Product, 'id'> = {
     steps: [],
     monthlyTarget: 100,
     includeSaturday: false,
-    includeSunday: false
+    includeSunday: false,
+    aiVisibleColumns: [], // if empty, backward compatibility -> show all or none? 
+    // Plan says: undefined/empty = show all (backward compat behavior to be handled in context.ts or explicit init here)
+    // Let's assume undefined = show all. If user saves, we can init them.
+    aiVisibleSteps: []
 };
 
 export default function SettingsPage() {
@@ -913,6 +919,9 @@ export default function SettingsPage() {
                                                     </label>
                                                     <p className="text-xs text-slate-500 mb-3">
                                                         Order info (e.g., WO ID, Due Date).
+                                                        <span className="block mt-1 text-[10px] text-slate-400">
+                                                            <Eye className="w-3 h-3 inline mr-1 text-green-600" />Visible to AI | <EyeOff className="w-3 h-3 inline mr-1 text-slate-400" />Hidden
+                                                        </span>
                                                     </p>
 
                                                     {/* Add Detail Column Input */}
@@ -944,6 +953,44 @@ export default function SettingsPage() {
                                                                 </div>
                                                                 <span className="text-xs font-mono text-blue-500 w-5 text-center">{index + 1}</span>
                                                                 <div className="flex-1 text-sm font-medium text-slate-700 truncate">{col}</div>
+
+                                                                {/* AI Visibility Toggle */}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const currentVisible = editingProduct.aiVisibleColumns || [];
+                                                                        // If currently undefined, it means ALL are visible (implicit). So initializing means we must be careful.
+                                                                        // Actually, if we want to "Hide" this one, we should add ALL OTHERS to visible list (if list was empty/undefined).
+                                                                        // Simplified approach: If undefined, assume all are visible.
+                                                                        // To toggle this OFF, we need to populate the list with ALL except this one.
+
+                                                                        let newVisible: string[];
+
+                                                                        if (!editingProduct.aiVisibleColumns) {
+                                                                            // Initial state: All visible. Toggle OFF means:
+                                                                            newVisible = editingProduct.detailColumns.filter(c => c !== col);
+                                                                        } else {
+                                                                            if (editingProduct.aiVisibleColumns.includes(col)) {
+                                                                                // Toggle OFF
+                                                                                newVisible = editingProduct.aiVisibleColumns.filter(c => c !== col);
+                                                                            } else {
+                                                                                // Toggle ON
+                                                                                newVisible = [...editingProduct.aiVisibleColumns, col];
+                                                                            }
+                                                                        }
+
+                                                                        const updated = { ...editingProduct, aiVisibleColumns: newVisible };
+                                                                        setEditingProduct(updated);
+                                                                        updateProduct(updated);
+                                                                    }}
+                                                                    className="p-1 hover:bg-white rounded transition-colors"
+                                                                    title={(!editingProduct.aiVisibleColumns || editingProduct.aiVisibleColumns.includes(col)) ? 'Visible to AI' : 'Hidden from AI'}
+                                                                >
+                                                                    {(!editingProduct.aiVisibleColumns || editingProduct.aiVisibleColumns.includes(col))
+                                                                        ? <Eye className="w-4 h-4 text-green-600" />
+                                                                        : <EyeOff className="w-4 h-4 text-slate-400" />
+                                                                    }
+                                                                </button>
+
                                                                 <button onClick={() => deleteDetailColumn(col)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></button>
                                                             </div>
                                                         ))}
@@ -960,6 +1007,9 @@ export default function SettingsPage() {
                                                     </label>
                                                     <p className="text-xs text-slate-500 mb-3">
                                                         Production steps with durations.
+                                                        <span className="block mt-1 text-[10px] text-slate-400">
+                                                            <Eye className="w-3 h-3 inline mr-1 text-green-600" />Visible to AI | <EyeOff className="w-3 h-3 inline mr-1 text-slate-400" />Hidden
+                                                        </span>
                                                     </p>
 
                                                     {/* Add Step Input */}
@@ -1007,6 +1057,34 @@ export default function SettingsPage() {
                                                                     title="Hours"
                                                                 />
                                                                 <span className="text-[10px] text-slate-400">h</span>
+
+                                                                {/* AI Visibility Toggle */}
+                                                                <button
+                                                                    onClick={() => {
+                                                                        // Logic same as columns: If undefined, all visible.
+                                                                        let newVisible: string[];
+                                                                        if (!editingProduct.aiVisibleSteps) {
+                                                                            newVisible = editingProduct.steps.filter(s => s !== step);
+                                                                        } else {
+                                                                            if (editingProduct.aiVisibleSteps.includes(step)) {
+                                                                                newVisible = editingProduct.aiVisibleSteps.filter(s => s !== step);
+                                                                            } else {
+                                                                                newVisible = [...editingProduct.aiVisibleSteps, step];
+                                                                            }
+                                                                        }
+                                                                        const updated = { ...editingProduct, aiVisibleSteps: newVisible };
+                                                                        setEditingProduct(updated);
+                                                                        updateProduct(updated);
+                                                                    }}
+                                                                    className="p-1 hover:bg-slate-100 rounded transition-colors ml-1"
+                                                                    title={(!editingProduct.aiVisibleSteps || editingProduct.aiVisibleSteps.includes(step)) ? 'Visible to AI' : 'Hidden from AI'}
+                                                                >
+                                                                    {(!editingProduct.aiVisibleSteps || editingProduct.aiVisibleSteps.includes(step))
+                                                                        ? <Eye className="w-4 h-4 text-green-600" />
+                                                                        : <EyeOff className="w-4 h-4 text-slate-400" />
+                                                                    }
+                                                                </button>
+
                                                                 <button onClick={() => deleteStep(step)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></button>
                                                             </div>
                                                         ))}
@@ -1075,39 +1153,59 @@ export default function SettingsPage() {
                                         Data Management
                                     </h3>
                                     <div className="space-y-4">
-                                        <button
-                                            onClick={() => window.open('/api/export-csv')}
-                                            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 font-medium transition-colors"
-                                        >
-                                            <Download className="w-4 h-4" />
-                                            Download All Data (CSV)
-                                        </button>
 
                                         <div className="border-t border-slate-100 pt-4">
-                                            <p className="text-xs text-slate-500 mb-2">
-                                                Retention Policy: Keep 6 months of data.
+                                            <p className="text-xs text-slate-500 mb-3">
+                                                Retention Policy: Keep 12 months of data.
                                             </p>
-                                            <button
-                                                onClick={async () => {
-                                                    if (!confirm('WARNING: This will PERMANENTLY DELETE all data older than 6 months.\n\nAre you sure you want to proceed?')) return;
 
-                                                    try {
-                                                        const res = await fetch('/api/cleanup', { method: 'POST' });
-                                                        const data = await res.json();
-                                                        if (res.ok) {
-                                                            alert(data.message);
-                                                        } else {
-                                                            alert('Error: ' + data.error);
+                                            <div className="space-y-2">
+                                                {/* Step 1: Download Archive */}
+                                                <button
+                                                    onClick={() => window.open('/api/export-archive')}
+                                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                    Download Archive (12+ months old data)
+                                                </button>
+
+                                                {/* Step 2: Delete Old Data */}
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!confirm(
+                                                            'WARNING: This will PERMANENTLY DELETE all data older than 12 months.\n\n' +
+                                                            'Make sure you have downloaded the archive first!\n\n' +
+                                                            'Continue?'
+                                                        )) return;
+
+                                                        try {
+                                                            const res = await fetch('/api/cleanup', { method: 'POST' });
+                                                            const data = await res.json();
+                                                            if (res.ok) {
+                                                                alert(
+                                                                    `✅ Cleanup Complete\n\n` +
+                                                                    `Deleted:\n` +
+                                                                    `• ${data.details.deletedOrders} orders\n` +
+                                                                    ` ${data.details.deletedOrphanLogs} orphan logs\n\n` +
+                                                                    `Cut-off date: ${data.details.cutOffDate}`
+                                                                );
+                                                            } else {
+                                                                alert('Error: ' + data.error);
+                                                            }
+                                                        } catch (e) {
+                                                            alert('Cleanup failed');
                                                         }
-                                                    } catch (e) {
-                                                        alert('Cleanup failed');
-                                                    }
-                                                }}
-                                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                                Cleanup Old Data
-                                            </button>
+                                                    }}
+                                                    className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    Delete Old Data (12+ months)
+                                                </button>
+                                            </div>
+
+                                            <p className="text-xs text-amber-600 mt-2">
+                                                ⚠️ Always download the archive before deleting!
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

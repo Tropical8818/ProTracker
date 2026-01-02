@@ -2,12 +2,22 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Factory, Table2, HardHat, Settings, LogOut, Search, User, CheckCircle, Clock, AlertTriangle, Ban, RotateCcw, X, ScanBarcode, PauseCircle } from 'lucide-react';
+import { Factory, Table2, HardHat, Settings, LogOut, Search, User, CheckCircle, Clock, AlertTriangle, Ban, RotateCcw, X, ScanBarcode, PauseCircle, MessageCircle, Send, Loader2 } from 'lucide-react';
 import type { Order } from '@/lib/excel';
 import dynamic from 'next/dynamic';
+import { MessageNotification } from '@/components/MessageNotification';
 
 // Dynamic import for barcode scanner
 const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner'), { ssr: false });
+
+// Comment categories
+const COMMENT_CATEGORIES = [
+    { key: 'material', label: 'Material Shortage', color: 'bg-purple-100 text-purple-700' },
+    { key: 'machine', label: 'Machine Issue', color: 'bg-red-100 text-red-700' },
+    { key: 'quality', label: 'Quality Issue', color: 'bg-orange-100 text-orange-700' },
+    { key: 'process', label: 'Process Issue', color: 'bg-blue-100 text-blue-700' },
+    { key: 'other', label: 'Other', color: 'bg-slate-100 text-slate-700' },
+];
 
 function OperationContent() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -22,6 +32,21 @@ function OperationContent() {
     const [role, setRole] = useState<'user' | 'supervisor' | 'admin'>('user');
     const [username, setUsername] = useState('');
     const [scannerOpen, setScannerOpen] = useState(false);
+
+    // Comment Modal State
+    // Comment Modal State
+    const [commentModal, setCommentModal] = useState<{ step: string; orderId: string } | null>(null);
+    const [commentCategory, setCommentCategory] = useState('');
+    const [commentText, setCommentText] = useState('');
+    const [sendingComment, setSendingComment] = useState(false);
+    const [commentSuccess, setCommentSuccess] = useState(false);
+    const [stepComments, setStepComments] = useState<any[]>([]); // Store history
+    const [loadingComments, setLoadingComments] = useState(false);
+    const [mentionMenuOpen, setMentionMenuOpen] = useState(false);
+    const [selectedMention, setSelectedMention] = useState('');
+    const [supervisors, setSupervisors] = useState<any[]>([]); // List of supervisors for mentions
+    const [unreadStats, setUnreadStats] = useState<Record<string, { unread: number }>>({}); // Per-user unread stats
+
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -64,9 +89,31 @@ function OperationContent() {
 
             // Auto-select from URL
             const woParam = searchParams.get('wo');
+            const stepParam = searchParams.get('step');
+
             if (woParam) {
                 const order = ordersData.orders?.find((o: Order) => o['WO ID'] === woParam);
-                if (order) setSelectedOrder(order);
+                if (order) {
+                    setSelectedOrder(order);
+
+                    // Fetch unread stats for this order
+                    fetchUnreadStats(order.id);
+
+                    // If step provided, open comment modal
+                    if (stepParam) {
+                        setCommentModal({
+                            orderId: order.id,
+                            step: stepParam
+                        });
+                    }
+
+                    // Clear navigation params from URL to prevent re-opening on manual refresh
+                    const newParams = new URLSearchParams(searchParams.toString());
+                    newParams.delete('wo');
+                    newParams.delete('step');
+                    const newUrl = `${window.location.pathname}${newParams.toString() ? '?' + newParams.toString() : ''}`;
+                    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+                }
             }
         } catch (err) {
             console.error('fetchData error:', err);
@@ -77,9 +124,85 @@ function OperationContent() {
         }
     };
 
+    const fetchSupervisors = async () => {
+        try {
+            const res = await fetch('/api/users/supervisors');
+            if (res.ok) {
+                const data = await res.json();
+                setSupervisors(data.supervisors || []);
+            }
+        } catch (e) {
+            console.error('Failed to fetch supervisors', e);
+        }
+    };
+
+    const fetchUnreadStats = async (orderId: string) => {
+        try {
+            const res = await fetch(`/api/comments/unread-stats?orderId=${orderId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setUnreadStats(data.stats || {});
+            }
+        } catch (e) {
+            console.error('Failed to fetch unread stats', e);
+        }
+    };
+
     useEffect(() => {
         fetchData();
-    }, [productId]);
+        fetchSupervisors();
+
+        const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+        return () => clearInterval(interval);
+    }, [searchParams]); // Depend on searchParams to re-fetch if product ID changes
+
+    // Fetch unread stats when selectedOrder changes
+    useEffect(() => {
+        if (selectedOrder?.id) {
+            fetchUnreadStats(selectedOrder.id);
+        } else {
+            setUnreadStats({});
+        }
+    }, [selectedOrder?.id]);
+
+    // Fetch comments when modal opens
+    useEffect(() => {
+        if (commentModal) {
+            fetchStepComments(commentModal.orderId, commentModal.step);
+        } else {
+            setStepComments([]);
+        }
+    }, [commentModal]);
+
+    const fetchStepComments = async (orderId: string, stepName: string) => {
+        setLoadingComments(true);
+        try {
+            const res = await fetch(`/api/comments?orderId=${orderId}&stepName=${encodeURIComponent(stepName)}`);
+            if (res.ok) {
+                const data = await res.json();
+                setStepComments(data.comments || []);
+
+                // Mark comments as read
+                await fetch('/api/comments/mark-read', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId, stepName })
+                });
+
+                // Notify notification component to refresh
+                window.dispatchEvent(new Event('messages-updated'));
+
+                // Refresh unread stats after marking as read
+                if (selectedOrder?.id) {
+                    fetchUnreadStats(selectedOrder.id);
+                }
+            }
+        } catch (error) {
+            console.error('Fetch comments error:', error);
+        } finally {
+            setLoadingComments(false);
+        }
+    };
 
     const handleLogout = async () => {
         await fetch('/api/auth', { method: 'DELETE' });
@@ -158,6 +281,44 @@ function OperationContent() {
         return 'bg-slate-100 text-slate-600';
     };
 
+    const sendComment = async () => {
+        if (!commentModal || !commentText.trim()) return;
+
+        setSendingComment(true);
+        try {
+            const res = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: commentModal.orderId,
+                    stepName: commentModal.step,
+                    category: commentCategory,
+                    content: commentText.trim(),
+                    mentions: selectedMention ? [selectedMention] : [] // Backend will parse ID or Username
+                })
+            });
+
+            if (res.ok) {
+                setCommentSuccess(true);
+                setTimeout(() => {
+                    setCommentModal(null);
+                    setCommentText('');
+                    setCommentCategory('');
+                    setSelectedMention('');
+                    setCommentSuccess(false);
+                }, 1500);
+            } else {
+                const err = await res.json();
+                alert('Sent failed: ' + (err.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Send comment error:', error);
+            alert('Sent failed, please retry');
+        } finally {
+            setSendingComment(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-slate-100">
             {/* Header - Mobile optimized */}
@@ -203,6 +364,9 @@ function OperationContent() {
                                 <span className="hidden sm:inline">Settings</span>
                             </button>
                         )}
+
+                        {/* Message Notification */}
+                        <MessageNotification />
 
                         <button
                             onClick={handleLogout}
@@ -331,9 +495,26 @@ function OperationContent() {
                                                 <RotateCcw className="w-6 h-6 mb-1" />
                                                 Reset
                                             </button>
-                                            {/* Empty space to complete the grid */}
-                                            <div className="hidden sm:block"></div>
                                         </div>
+
+                                        {/* Comment Button - Full Width */}
+                                        <button
+                                            onClick={() => setCommentModal({ step, orderId: String(selectedOrder.id) })}
+                                            className="w-full mt-2 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all active:scale-95 text-purple-600 bg-purple-50 hover:bg-purple-100 active:bg-purple-200 relative"
+                                        >
+                                            <div className="relative">
+                                                <MessageCircle className="w-4 h-4" />
+                                                {unreadStats?.[step]?.unread > 0 && (
+                                                    <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-purple-50"></span>
+                                                )}
+                                            </div>
+                                            Comment
+                                            {(selectedOrder as any).commentStats?.[step]?.total > 0 && (
+                                                <span className="ml-1 text-[10px] bg-purple-200 text-purple-700 px-1.5 rounded-full">
+                                                    {(selectedOrder as any).commentStats?.[step]?.total}
+                                                </span>
+                                            )}
+                                        </button>
 
                                         {isLocked && (
                                             <p className="text-[10px] text-slate-400 text-center mt-2">🔒 Locked</p>
@@ -408,6 +589,310 @@ function OperationContent() {
                                 Proceed Anyway
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Comment Modal */}
+            {commentModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+                        {commentSuccess ? (
+                            <div className="text-center py-8">
+                                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CheckCircle className="w-8 h-8 text-green-600" />
+                                </div>
+                                <h3 className="text-lg font-bold text-green-600">Message Sent!</h3>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900">
+                                            💬 Comments - {commentModal.step}
+                                        </h3>
+                                        <p className="text-xs text-slate-500 mt-0.5">
+                                            {stepComments.length} comment{stepComments.length !== 1 ? 's' : ''}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            setCommentModal(null);
+                                            setCommentText('');
+                                            setCommentCategory('');
+                                            setSelectedMention('');
+                                        }}
+                                        className="p-1 text-slate-400 hover:text-slate-600"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                {/* History Section */}
+                                <div className="mb-4 max-h-60 overflow-y-auto bg-white rounded-lg border border-slate-200">
+                                    {loadingComments ? (
+                                        <div className="text-center py-4 text-slate-400">
+                                            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                                            Loading history...
+                                        </div>
+                                    ) : stepComments.length > 0 ? (
+                                        <div className="divide-y divide-slate-100">
+                                            {stepComments.map((comment: any) => (
+                                                <div key={comment.id} className="px-2.5 py-2 hover:bg-slate-50 transition-colors group">
+                                                    {/* 头部：发送者、角色、分类、时间、删除按钮 */}
+                                                    <div className="flex items-center gap-1.5 mb-1">
+                                                        <span className="text-[11px] font-bold text-slate-900">
+                                                            {comment.user?.username || 'Unknown'}
+                                                        </span>
+                                                        {comment.user?.role && comment.user.role !== 'user' && (
+                                                            <span className="text-[8px] text-slate-500 bg-slate-100 px-1 py-0.5 rounded">
+                                                                {comment.user.role}
+                                                            </span>
+                                                        )}
+                                                        <span className={`text-[8px] px-1 py-0.5 rounded font-medium ${COMMENT_CATEGORIES.find(c => c.key === comment.category)?.color || 'bg-slate-100'}`}>
+                                                            {COMMENT_CATEGORIES.find(c => c.key === comment.category)?.label || comment.category}
+                                                        </span>
+                                                        {comment.mentionedUsers && comment.mentionedUsers.length > 0 && (
+                                                            <>
+                                                                <span className="text-[8px] text-slate-400">→</span>
+                                                                {comment.mentionedUsers.map((user: any, idx: number) => (
+                                                                    <span
+                                                                        key={user.id}
+                                                                        className="text-[8px] px-1 py-0.5 bg-indigo-50 text-indigo-600 rounded font-medium"
+                                                                    >
+                                                                        @{user.username}
+                                                                    </span>
+                                                                ))}
+                                                            </>
+                                                        )}
+                                                        <span className="text-[9px] text-slate-400 ml-auto">
+                                                            {new Date(comment.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        {/* Delete button - only for supervisor/admin */}
+                                                        {(role === 'supervisor' || role === 'admin') && (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (confirm('Are you sure you want to delete this comment?')) {
+                                                                        try {
+                                                                            const res = await fetch(`/api/comments/${comment.id}`, {
+                                                                                method: 'DELETE'
+                                                                            });
+                                                                            if (res.ok) {
+                                                                                // Refresh comments and order data
+                                                                                if (commentModal) {
+                                                                                    fetchStepComments(commentModal.orderId, commentModal.step);
+
+                                                                                    // Refresh the selected order to update comment counts on buttons
+                                                                                    if (selectedOrder) {
+                                                                                        const ordersUrl = productId
+                                                                                            ? `/api/orders?productId=${productId}`
+                                                                                            : '/api/orders';
+                                                                                        const ordersRes = await fetch(ordersUrl);
+                                                                                        if (ordersRes.ok) {
+                                                                                            const ordersData = await ordersRes.json();
+                                                                                            const updatedOrder = ordersData.orders?.find((o: any) => o['WO ID'] === selectedOrder['WO ID']);
+                                                                                            if (updatedOrder) {
+                                                                                                setSelectedOrder(updatedOrder);
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            } else {
+                                                                                alert('Failed to delete comment');
+                                                                            }
+                                                                        } catch (error) {
+                                                                            console.error('Delete error:', error);
+                                                                            alert('Failed to delete comment');
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                className="opacity-0 group-hover:opacity-100 ml-1 text-red-500 hover:text-red-700 transition-opacity"
+                                                                title="Delete comment"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+
+                                                    {/* 评论内容 */}
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <p className="text-[13px] text-slate-700 break-words leading-snug flex-1">
+                                                            {comment.content || comment.note}
+                                                        </p>
+                                                        {/* Reply button */}
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedMention(comment.userId);
+                                                                // Scroll to input area and focus
+                                                                const textarea = document.querySelector('textarea');
+                                                                textarea?.focus();
+                                                            }}
+                                                            className="flex-shrink-0 text-[10px] text-blue-500 hover:text-blue-700 hover:bg-blue-50 px-2 py-0.5 rounded transition-colors"
+                                                            title={`Reply to ${comment.user?.username}`}
+                                                        >
+                                                            Reply
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4 text-slate-400 text-sm italic">
+                                            No comments yet.
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Category Selection */}
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Category {role === 'user' && <span className="text-red-500">*</span>}
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {COMMENT_CATEGORIES.map(cat => (
+                                            <button
+                                                key={cat.key}
+                                                onClick={() => setCommentCategory(cat.key)}
+                                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${commentCategory === cat.key
+                                                    ? cat.color + ' ring-2 ring-offset-1'
+                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                    }`}
+                                            >
+                                                {cat.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Message Input & Mentions */}
+                                <div className="mb-4">
+                                    {/* Read-Only Check for Users */}
+                                    {role === 'user' && selectedOrder && commentModal && (
+                                        (selectedOrder as any)?.[commentModal.step] && (
+                                            (selectedOrder as any)[commentModal.step].match(/\d{4}-\d{2}-\d{2}/) ||
+                                            (selectedOrder as any)[commentModal.step].toUpperCase() === 'COMPLETED' // Simplified check
+                                        )
+                                    ) ? (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-amber-700 text-sm flex items-center gap-2">
+                                            <AlertTriangle className="w-4 h-4" />
+                                            This step is completed. Comments are closed.
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between items-center mb-2">
+                                                <label className="block text-sm font-medium text-slate-700">Message</label>
+
+                                                {/* Mention Selector */}
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={() => setMentionMenuOpen(!mentionMenuOpen)}
+                                                        className={`text-xs px-2 py-1 rounded border flex items-center gap-1 ${selectedMention
+                                                            ? 'bg-indigo-50 text-indigo-600 border-indigo-200 font-medium'
+                                                            : 'bg-slate-50 text-slate-500 border-slate-200'
+                                                            }`}
+                                                    >
+                                                        {selectedMention ? (selectedMention.startsWith('@') ? `To: ${selectedMention}` : `To: ${supervisors.find(s => s.id === selectedMention)?.username || 'User'}`) : '@ Mention...'}
+                                                    </button>
+
+                                                    {mentionMenuOpen && (
+                                                        <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-10 w-48 overflow-hidden max-h-60 overflow-y-auto">
+                                                            <div className="text-[10px] text-slate-400 px-3 py-1 bg-slate-50 border-b">Select Recipient</div>
+
+                                                            {role === 'user' ? (
+                                                                <>
+                                                                    <div className="px-2 py-1 text-[10px] text-slate-400 bg-slate-50 font-medium">Supervisors</div>
+                                                                    {supervisors
+                                                                        .filter(s => s.role === 'supervisor') // Strict requirement: Only Supervisors, no Admins
+                                                                        .map(s => (
+                                                                            <button
+                                                                                key={s.id}
+                                                                                onClick={() => { setSelectedMention(s.id); setMentionMenuOpen(false); }}
+                                                                                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 text-indigo-600 truncate"
+                                                                            >
+                                                                                @{s.username}
+                                                                            </button>
+                                                                        ))}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="px-2 py-1 text-[10px] text-slate-400 bg-slate-50 font-medium">Groups</div>
+                                                                    <button
+                                                                        onClick={() => { setSelectedMention('@Everyone'); setMentionMenuOpen(false); }}
+                                                                        className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 text-indigo-600 font-bold"
+                                                                    >
+                                                                        @Everyone
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => { setSelectedMention('@Operator'); setMentionMenuOpen(false); }}
+                                                                        className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 text-blue-600 font-bold"
+                                                                    >
+                                                                        @Operators
+                                                                    </button>
+
+                                                                    <div className="px-2 py-1 text-[10px] text-slate-400 bg-slate-50 font-medium border-t">Supervisors</div>
+                                                                    {supervisors.filter(s => s.role === 'admin' || s.role === 'supervisor').map(s => (
+                                                                        <button
+                                                                            key={s.id}
+                                                                            onClick={() => { setSelectedMention(s.id); setMentionMenuOpen(false); }}
+                                                                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 text-purple-600 truncate"
+                                                                        >
+                                                                            @{s.username} <span className="text-[10px] text-slate-400">({s.role})</span>
+                                                                        </button>
+                                                                    ))}
+
+                                                                    <div className="px-2 py-1 text-[10px] text-slate-400 bg-slate-50 font-medium border-t">Operators</div>
+                                                                    {supervisors.filter(s => s.role === 'user').map(s => (
+                                                                        <button
+                                                                            key={s.id}
+                                                                            onClick={() => { setSelectedMention(s.id); setMentionMenuOpen(false); }}
+                                                                            className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 text-blue-600 truncate"
+                                                                        >
+                                                                            @{s.username}
+                                                                        </button>
+                                                                    ))}
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <textarea
+                                                value={commentText}
+                                                onChange={(e) => setCommentText(e.target.value)}
+                                                placeholder={`Type your message... ${selectedMention ? `(notifying selected user)` : ''}`}
+                                                className="w-full px-4 py-3 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 text-slate-900 min-h-[80px] resize-none"
+                                            />
+                                            {selectedMention && (
+                                                <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1">
+                                                    <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full inline-block"></span>
+                                                    Wait for response from: <strong>{selectedMention.startsWith('@') ? selectedMention : supervisors.find(s => s.id === selectedMention)?.username}</strong>
+                                                </p>
+                                            )}
+
+                                            {/* Send Button */}
+                                            <button
+                                                onClick={async () => {
+                                                    await sendComment();
+                                                    // Refresh comments after sending
+                                                    if (commentModal) {
+                                                        fetchStepComments(commentModal.orderId, commentModal.step);
+                                                    }
+                                                }}
+                                                disabled={sendingComment || !commentText.trim() || (role === 'user' && !commentCategory && !selectedMention)}
+                                                className="w-full py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                                            >
+                                                {sendingComment ? (
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                ) : (
+                                                    <Send className="w-5 h-5" />
+                                                )}
+                                                {sendingComment ? 'Sending...' : 'Send'}
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

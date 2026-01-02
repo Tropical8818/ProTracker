@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { format } from 'date-fns';
 
 export async function POST() {
     const session = await getSession();
@@ -10,11 +11,12 @@ export async function POST() {
     }
 
     try {
-        // Calculate date 6 months ago
+        // Retention policy: 12 months (updated from 6)
         const cutOffDate = new Date();
-        cutOffDate.setMonth(cutOffDate.getMonth() - 6);
+        cutOffDate.setMonth(cutOffDate.getMonth() - 12);
 
-        const result = await prisma.order.deleteMany({
+        // Delete old orders (will cascade delete related comments and logs)
+        const deletedOrders = await prisma.order.deleteMany({
             where: {
                 createdAt: {
                     lt: cutOffDate
@@ -22,10 +24,23 @@ export async function POST() {
             }
         });
 
+        // Clean up orphan operation logs (no associated order)
+        const deletedOrphanLogs = await prisma.operationLog.deleteMany({
+            where: {
+                timestamp: { lt: cutOffDate },
+                orderId: null
+            }
+        });
+
         return NextResponse.json({
             success: true,
-            message: `Successfully deleted ${result.count} old records.`,
-            deletedCount: result.count
+            message: `Successfully deleted data older than ${format(cutOffDate, 'yyyy-MM-dd')}.`,
+            details: {
+                deletedOrders: deletedOrders.count,
+                deletedOrphanLogs: deletedOrphanLogs.count,
+                retentionPolicy: '12 months',
+                cutOffDate: format(cutOffDate, 'yyyy-MM-dd')
+            }
         });
 
     } catch (error) {

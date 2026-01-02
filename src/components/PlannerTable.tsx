@@ -198,11 +198,11 @@ export default function PlannerTable({
         }
     };
 
-    const formatDate = (val: string) => {
+    const formatDate = (val: string, fmt = 'dd-MMM') => {
         if (!val) return '';
         try {
             const date = new Date(val);
-            if (isValid(date)) return format(date, 'dd-MMM');
+            if (isValid(date)) return format(date, fmt);
         } catch { }
         return val.split('T')[0] || val;
     };
@@ -683,7 +683,7 @@ export default function PlannerTable({
                                                     onClick={(e) => e.stopPropagation()}
                                                 />
                                             ) : (
-                                                formatDate(value)
+                                                formatDate(value, 'dd-MM-yyyy')
                                             )}
                                         </td>
                                     );
@@ -867,7 +867,38 @@ export default function PlannerTable({
                                                                                             : ''
                                         }
                                     >
-                                        {formatCellValue(cellValue)}
+                                        <div className="relative w-full h-full flex items-center justify-center min-h-[14px]">
+                                            {formatCellValue(cellValue)}
+                                            {(order as any).commentStats?.[step]?.total > 0 && (
+                                                <div
+                                                    className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full border border-white ${(order as any).userUnreadStats?.[step]?.unread > 0 ? 'bg-red-500 animate-pulse' : 'bg-indigo-400'}`}
+                                                    title={(() => {
+                                                        const total = (order as any).commentStats?.[step]?.total || 0;
+                                                        const unread = (order as any).userUnreadStats?.[step]?.unread || 0;
+                                                        const previews = (order as any).commentPreviews?.[step] || [];
+
+                                                        let tooltip = `${total} comment${total > 1 ? 's' : ''}${unread > 0 ? ` (${unread} unread)` : ''}`;
+
+                                                        if (previews.length > 0) {
+                                                            tooltip += '\n\nRecent comments:\n';
+                                                            previews.forEach((p: any, idx: number) => {
+                                                                const content = p.content.length > 60 ? p.content + '...' : p.content;
+                                                                const date = new Date(p.createdAt);
+                                                                const timeStr = date.toLocaleString('en-US', {
+                                                                    month: 'short',
+                                                                    day: 'numeric',
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit'
+                                                                });
+                                                                tooltip += `\n[${timeStr}] ${p.username}: ${content}`;
+                                                            });
+                                                        }
+
+                                                        return tooltip;
+                                                    })()}
+                                                />
+                                            )}
+                                        </div>
                                     </td>
                                 );
                             })}

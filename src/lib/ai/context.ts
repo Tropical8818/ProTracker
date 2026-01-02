@@ -22,9 +22,17 @@ export interface ProductionStats {
     totalOrders: number; // Real DB count
 }
 
+// Category Statistics for AI Analysis
+export interface CategoryStats {
+    byStep: Record<string, Record<string, number>>; // step -> category -> count
+    total: Record<string, number>; // category -> total count
+    topIssues: { step: string, category: string, count: number }[];
+}
+
 export interface AIContext {
     orders: OrderSummary[];
     stats: ProductionStats;
+    categoryStats: CategoryStats; // New field
     recentLogs: {
         action: string;
         woId: string;
@@ -38,13 +46,77 @@ export interface AIContext {
         steps: string[];
         customInstructions?: string;
     }[];
+    activeIssues?: {
+        woId: string;
+        category: string;
+        content: string;
+        step: string;
+        time: string;
+    }[];
     activeModel?: string;
     activeProvider?: 'openai' | 'ollama';
 }
 
+// Helper to normalize dates (e.g., "23-Dec" -> "2025-12-23" if current is Jan 2026)
+function normalizeDate(dateStr: string): string {
+    if (!dateStr) return '';
+
+    // If already ISO, return truncated
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return dateStr.split('T')[0];
+
+    // Handle "DD-Mon" format (e.g. 23-Dec)
+    const match = dateStr.match(/^(\d{1,2})-([A-Za-z]{3})$/);
+    if (match) {
+        const day = parseInt(match[1]);
+        const monthStr = match[2];
+        const months: Record<string, number> = {
+            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+            'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+        const month = months[monthStr];
+
+        if (typeof month === 'number') {
+            const today = new Date();
+            let year = today.getFullYear();
+            const dateCandidate = new Date(year, month, day);
+
+            // If the candidate date is more than 6 months in the future, assume it was last year
+            // (e.g. today Jan 2026, date Dec 23 -> Dec 23 2026 is +11 months -> assume 2025)
+            const diffMonths = (dateCandidate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30);
+
+            if (diffMonths > 6) {
+                year -= 1;
+            } else if (diffMonths < -6) {
+                // Verify correctness: if today is Dec 2025, and date is Jan 2025?
+                // Usually unlikely in this context, but safer logic:
+                // Find year that makes date closest to today?
+                // Simple heuristic: Production orders are usually within +/- 6 months.
+            }
+
+            // Reconstruct in IOS format 
+            // Note: Month is 0-indexed in JS Date but 1-indexed in ISO
+            const yyyy = year;
+            const mm = String(month + 1).padStart(2, '0');
+            const dd = String(day).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+    }
+
+    return dateStr;
+}
+
+// Helper to sanitize personal names from text for AI privacy
+export function sanitizeContent(text: string): string {
+    if (!text) return '';
+    // Replace mentions @Username with [User]
+    // Use lookbehind-like logic: match start-of-line or whitespace before @
+    return text.replace(/(^|\s)@\w+/g, '$1[User]');
+}
+
 // Build context for AI from production data
 // queriedWoId: If provided, ensures this specific order is included in context even if not in top results
-export async function buildAIContext(productId?: string, queriedWoId?: string): Promise<AIContext> {
+// buildAIContext updated signature
+export async function buildAIContext(productId?: string, queriedWoId?: string, queriedEmployeeId?: string): Promise<AIContext> {
     // CRITICAL: Require productId for product line isolation
     // This prevents AI from accessing data across multiple product lines
     if (!productId) {
@@ -162,16 +234,26 @@ export async function buildAIContext(productId?: string, queriedWoId?: string): 
         const steps = config.steps || [];
         const detailColumns = config.detailColumns || [];
 
-        // Extract all detail columns for AI analysis
+        // Visibility Settings (Backward compatibility: if undefined, show all)
+        const visibleDetailCols = config.aiVisibleColumns; // string[] | undefined
+        const visibleStepCols = config.aiVisibleSteps; // string[] | undefined
+
+        // Extract detail columns, applying visibility filter if configured
         const details: Record<string, string> = {};
         for (const col of detailColumns) {
-            details[col] = data[col] || '';
+            // Include if no filter defined, OR if explicitly included
+            if (!visibleDetailCols || visibleDetailCols.includes(col)) {
+                details[col] = data[col] || '';
+            }
         }
 
-        // Extract all step values for AI analysis
+        // Extract step values, applying visibility filter if configured
         const stepValues: Record<string, string> = {};
         for (const step of steps) {
-            stepValues[step] = data[step] || '';
+            // Include if no filter defined, OR if explicitly included
+            if (!visibleStepCols || visibleStepCols.includes(step)) {
+                stepValues[step] = data[step] || '';
+            }
         }
 
         // First, scan ALL steps for Hold/QN/DIFA (blocking statuses have priority)
@@ -236,12 +318,16 @@ export async function buildAIContext(productId?: string, queriedWoId?: string): 
             currentStep = lastStep;
         }
 
+        // Find Due Date (handle multiple column names)
+        const rawDueDate = data['WO DUE'] || data['Due Date'] || data['ECD'] || data['交期'] || '';
+        const normDueDate = normalizeDate(rawDueDate);
+
         return {
             woId: order.woId,
             productName: order.product.name,
             currentStep,
             status,
-            ecd: data['ECD'] || '',
+            ecd: normDueDate, // Use normalized numeric date for AI analysis
             daysInCurrentStep: 0, // Could calculate from logs
             details,
             stepValues
@@ -268,8 +354,149 @@ export async function buildAIContext(productId?: string, queriedWoId?: string): 
         completionRate: orders.length > 0 ? Math.round((completedToday / orders.length) * 100) : 0
     };
 
+    // --- Category Statistics Logic ---
+    // Fetch comments from last 90 days for this product
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+    const relevantComments = await prisma.comment.findMany({
+        where: {
+            order: { productId },
+            createdAt: { gte: ninetyDaysAgo },
+            NOT: { category: 'GENERAL' } // Focus on issues
+        },
+        select: {
+            stepName: true,
+            category: true
+        }
+    });
+
+    const categoryStats: CategoryStats = {
+        byStep: {},
+        total: {},
+        topIssues: []
+    };
+
+    relevantComments.forEach(c => {
+        // Aggregate by Query Category
+        if (!categoryStats.total[c.category]) categoryStats.total[c.category] = 0;
+        categoryStats.total[c.category]++;
+
+        // Aggregate by Step
+        if (!categoryStats.byStep[c.stepName]) categoryStats.byStep[c.stepName] = {};
+        if (!categoryStats.byStep[c.stepName][c.category]) categoryStats.byStep[c.stepName][c.category] = 0;
+        categoryStats.byStep[c.stepName][c.category]++;
+    });
+
+    // Calculate Top Issues
+    const issueList: { step: string, category: string, count: number }[] = [];
+    Object.entries(categoryStats.byStep).forEach(([step, cats]) => {
+        Object.entries(cats).forEach(([cat, count]) => {
+            issueList.push({ step, category: cat, count });
+        });
+    });
+    // Sort desc by count
+    categoryStats.topIssues = issueList.sort((a, b) => b.count - a.count).slice(0, 10);
+    // ---------------------------------
+
+    // --- Active Order Issues (For Morning Report) ---
+    // Fetch recent comments (last 48h) for ACTIVE orders only
+    const fortyEightHoursAgo = new Date();
+    fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+
+    const activeOrderComments = await prisma.comment.findMany({
+        where: {
+            order: {
+                productId,
+                NOT: {
+                    // Check latest status from JSON data is tricky in Prisma filter, 
+                    // so we interpret "Active" as orders available in our activeOrders list
+                    // But for safety, we'll fetch recent comments and filter in JS
+                }
+            },
+            createdAt: { gte: fortyEightHoursAgo },
+            NOT: { category: 'GENERAL' } // Focus on issues
+        },
+        include: {
+            order: {
+                select: { woId: true, data: true }
+            },
+            user: {
+                select: { employeeId: true }
+            }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20 // Limit to top 20 recent issues
+    });
+
+    // Fetch all users for mention resolution (optimization: fetch only needed fields)
+    const allUsers = await prisma.user.findMany({
+        select: { username: true, employeeId: true }
+    });
+
+    // Create a map for quick username -> employeeId lookup (lowercase for case-insensitive match)
+    const userMap = new Map<string, string>();
+    allUsers.forEach(u => {
+        if (u.username && u.employeeId) {
+            userMap.set(u.username.toLowerCase(), u.employeeId);
+        }
+    });
+
+    // Filter for truly active orders (check status from JSON)
+    const activeIssues = activeOrderComments.filter(c => {
+        const data = JSON.parse(c.order.data || '{}');
+        const product = productData.find(p => p.id === productId);
+        const config = (product as any).config || {};
+        const steps = config.steps || [];
+
+        // Determine status
+        let status = 'Active';
+        const lastStep = steps[steps.length - 1];
+        const lastValue = data[lastStep] || '';
+        if (lastValue && !['P', 'WIP', 'Hold', 'QN', 'N/A', 'DIFA'].includes(lastValue.toUpperCase())) {
+            status = 'Completed';
+        }
+
+        return status !== 'Completed';
+    }).map(c => {
+        // Sanitize content with Employee IDs
+        let content = c.content || '';
+
+        // 1. Replace mentions @Username -> @EmployeeID using lookup map
+        // Match @Username word boundaries
+        content = content.replace(/@(\w+)/g, (match, username) => {
+            const eid = userMap.get(username.toLowerCase());
+            return eid ? `[ID:${eid}]` : match; // Replace if found, else keep original (will be caught by generic sanitizer later)
+        });
+
+        // 2. Fallback sanitization for any remaining @mentions (e.g. unknown users)
+        content = sanitizeContent(content);
+
+        // 3. Attribute to Author ID
+        const authorId = c.user?.employeeId || 'Unknown';
+
+        return {
+            woId: c.order.woId,
+            category: c.category,
+            content: `[ID:${authorId}] ${content}`,
+            step: c.stepName,
+            time: c.createdAt.toISOString()
+        };
+    });
+    // ------------------------------------------------
+
     // Fetch recent logs
+    // If queriedEmployeeId is present, we prioritize logs for that user
+    let logWhere = {};
+    if (queriedEmployeeId) {
+        console.log(`[AI Context] Fetching specific logs for Employee ID: ${queriedEmployeeId}`);
+        logWhere = {
+            user: { employeeId: queriedEmployeeId }
+        };
+    }
+
     const logs = await prisma.operationLog.findMany({
+        where: logWhere,
         take: 30, // Increased log count for better activity analysis
         orderBy: { timestamp: 'desc' },
         include: {
@@ -277,7 +504,7 @@ export async function buildAIContext(productId?: string, queriedWoId?: string): 
                 select: { woId: true }
             },
             user: {
-                select: { username: true, employeeId: true }
+                select: { employeeId: true } // CRITICAL: Only fetch employeeId, NEVER username
             }
         }
     });
@@ -296,8 +523,10 @@ export async function buildAIContext(productId?: string, queriedWoId?: string): 
     return {
         orders: orderSummaries, // Include all orders
         stats,
+        categoryStats,
         recentLogs,
         products: productData,
+        activeIssues, // Include in context
         activeModel,
         activeProvider
     };
@@ -319,6 +548,12 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
     }
     lines.push('');
 
+    // Inject Today's Date for Reference (CRITICAL for overdue calculations)
+    const today = new Date();
+    lines.push(`## System Context`);
+    lines.push(`- **Current Date**: ${today.toISOString().split('T')[0]}`);
+    lines.push('');
+
     lines.push('## Production Statistics');
     lines.push('## Production Statistics');
     lines.push(`- Total Orders: ${context.stats.totalOrders} (Analysis based on recent ${context.orders.length} active orders)`);
@@ -328,20 +563,61 @@ export function formatContextForAI(context: AIContext, activeProductId?: string)
     lines.push(`- Hold/QN: ${context.stats.totalHold}`);
     lines.push('');
 
+    // Inject Category Analysis
+    lines.push('## ⚠️ Issue Analysis (Last 90 Days)');
+    if (context.categoryStats.topIssues.length > 0) {
+        lines.push('**Top Reported Issues (Category / Step / Count):**');
+        context.categoryStats.topIssues.forEach(issue => {
+            lines.push(`- ${issue.category} at "${issue.step}": ${issue.count} incidents`);
+        });
+        lines.push('');
+        lines.push('**Issue Totals:**');
+        Object.entries(context.categoryStats.total).forEach(([cat, count]) => {
+            lines.push(`- ${cat}: ${count}`);
+        });
+    } else {
+        lines.push('No significant issues (Material, Quality, Equipment) reported in the last 90 days.');
+    }
+    lines.push('');
+
+    // Inject Active Order Issues (Detailed) - NEW
+    if (context.activeIssues && context.activeIssues.length > 0) {
+        lines.push('## 🔴 Recent Issues on ACTIVE Orders (Last 48h)');
+        lines.push('Use these details for the Morning Report to highlight specific blockers:');
+        context.activeIssues.forEach(issue => {
+            // Content is already sanitized and ID-attributed in the mapping phase
+            lines.push(`- [${issue.category}] ${issue.woId} at "${issue.step}": "${issue.content}"`);
+        });
+        lines.push('');
+    }
+
     lines.push('## Product Lines & Data Structure');
     for (const product of context.products) {
         const config = (product as any).config || {};
         const detailCols = config.detailColumns || [];
+        const steps = product.steps || [];
+
+        // Filter Detail Columns based on Visibility
+        const visibleDetailCols = config.aiVisibleColumns
+            ? detailCols.filter((c: string) => config.aiVisibleColumns.includes(c))
+            : detailCols;
+
+        // Filter Steps based on Visibility
+        const visibleSteps = config.aiVisibleSteps
+            ? steps.filter((s: string) => config.aiVisibleSteps.includes(s))
+            : steps;
 
         lines.push(`### ${product.name}`);
 
         // Show detail columns (static order info)
-        if (detailCols.length > 0) {
-            lines.push(`**Detail Columns** (Static Order Info): ${detailCols.join(', ')}`);
+        if (visibleDetailCols.length > 0) {
+            lines.push(`**Detail Columns** (Static Order Info): ${visibleDetailCols.join(', ')}`);
         }
 
         // Show process steps (progress tracking)
-        lines.push(`**Process Steps** (in sequence): ${product.steps.join(' → ')}`);
+        if (visibleSteps.length > 0) {
+            lines.push(`**Process Steps** (in sequence): ${visibleSteps.join(' → ')}`);
+        }
 
         // Only show custom instructions for the active product to save tokens
         if (product.customInstructions && (!activeProductId || product.id === activeProductId)) {

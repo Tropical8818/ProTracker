@@ -4,8 +4,8 @@ import { importFromBuffer } from '@/lib/import-service';
 
 export async function POST(request: NextRequest) {
     const session = await getSession();
-    if (!session || session.role !== 'admin') {
-        return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    if (!session || (session.role !== 'admin' && session.role !== 'supervisor')) {
+        return NextResponse.json({ error: 'Admin or Supervisor access required' }, { status: 403 });
     }
 
     try {
