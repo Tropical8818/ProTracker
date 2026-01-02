@@ -1,45 +1,29 @@
 
 #!/bin/bash
+set -e # Exit immediately if a command exits with a non-zero status.
 
-# Configuration
-VERSION=$(node -p "require('./package.json').version")
-IMAGE_NAME="protracker"
-DOCKER_USER="protracker-local" # Change to your docker hub user if needed
-
-echo "🚀 Building ProTracker v$VERSION from Git..."
+echo "🚀 Starting Deployment Process..."
 
 # 1. Pull latest code
-echo "📥 Pulling latest code..."
-git pull origin main
+echo "📥 Pulling latest code from git..."
+git fetch origin main
+git reset --hard origin/main
+# Using reset --hard to force overwrite local deviations if any, ensuring it matches remote exactly.
+# If you prefer to keep local changes, change to 'git pull origin main'
 
-# 2. Build Docker Image
-echo "🔨 Building Docker image..."
-docker build -t $IMAGE_NAME:$VERSION -t $IMAGE_NAME:latest .
+# 2. Rebuild and Restart containers
+echo "🔄 Rebuilding and restarting containers..."
+# This uses the configuration from docker-compose.yml (Port 3001, TZ=Asia/Shanghai, etc.)
+docker-compose down
+docker-compose up -d --build
 
-# 3. Create necessary folders
-echo "📂 Creating data directories..."
-mkdir -p ./data/uploads
-mkdir -p ./data/db
+# 3. Cleanup unused images (optional)
+echo "🧹 Cleaning up unused Docker images..."
+docker image prune -f
 
-# 4. Run Container
-echo "🏃‍♂️ Starting container..."
-# Check if container exists and remove it
-if [ "$(docker ps -aq -f name=$IMAGE_NAME)" ]; then
-    echo "Stopping existing container..."
-    docker stop $IMAGE_NAME
-    docker rm $IMAGE_NAME
-fi
-
-# Run new container
-# Note: Using host networking or mapping specific ports. Here mapping 3000:3000
-docker run -d \
-  --name $IMAGE_NAME \
-  --restart unless-stopped \
-  -p 3000:3000 \
-  -v $(pwd)/data:/app/data \
-  -v $(pwd)/public/uploads:/app/public/uploads \
-  -e DATABASE_URL="file:/app/data/db/prod.db" \
-  $IMAGE_NAME:latest
-
-echo "✅ Deployment complete! App running at http://localhost:3000"
-echo "📜 Logs: docker logs -f $IMAGE_NAME"
+echo "✅ Deployment complete!"
+echo "   - App running at: http://localhost:3001"
+echo "   - Container Name: protracker"
+echo "   - Timezone: Asia/Shanghai"
+echo ""
+echo "📜 View logs with: docker-compose logs -f"
