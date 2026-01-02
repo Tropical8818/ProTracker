@@ -135,12 +135,5 @@ Contact author for access: mailto: jkdb0g@whatifthenhow.com
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Stars](https://img.shields.io/github/stars/Tropical8818/ProTracker?style=social)](https://github.com/Tropical8818/ProTracker)
 
-## 💝 Support This Project
-If you find ProTracker helpful, consider supporting its development:
-
-**Bitcoin (BTC)**: `bc1q7fa9vkkqx27w6y6kx2h8kkgyhz9f84w7cvq5l7`
-
-Your support helps maintain and improve this open-source project. Thank you! 🙏
-
 ## 📈 Git Trend
 [![Star History Chart](https://api.star-history.com/svg?repos=Tropical8818/ProTracker&type=Date)](https://star-history.com/#Tropical8818/ProTracker&Date)
