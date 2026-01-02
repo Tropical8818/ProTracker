@@ -201,45 +201,10 @@ export default function PlannerTable({
     const formatDate = (val: string, fmt = 'dd-MMM') => {
         if (!val) return '';
         try {
-            // Try parsing as ISO format first (YYYY-MM-DD)
-            if (/^\d{4}-\d{2}-\d{2}/.test(val)) {
-                const date = new Date(val);
-                if (isValid(date)) return format(date, fmt);
-            }
-
-            // Handle legacy dd-MMM format (e.g., "15-Jan") - assume current year
-            const legacyMatch = val.match(/^(\d{1,2})-(\w{3})$/);
-            if (legacyMatch) {
-                const day = parseInt(legacyMatch[1]);
-                const monthStr = legacyMatch[2];
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const monthIndex = months.findIndex(m => m.toLowerCase() === monthStr.toLowerCase());
-                if (monthIndex !== -1) {
-                    const year = new Date().getFullYear();
-                    const date = new Date(year, monthIndex, day);
-                    if (isValid(date)) return format(date, fmt);
-                }
-            }
-
-            // Handle dd-MMM, HH:mm format (e.g., "15-Jan, 10:30")
-            const legacyTimeMatch = val.match(/^(\d{1,2})-(\w{3}),\s*(\d{2}):(\d{2})$/);
-            if (legacyTimeMatch) {
-                const day = parseInt(legacyTimeMatch[1]);
-                const monthStr = legacyTimeMatch[2];
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const monthIndex = months.findIndex(m => m.toLowerCase() === monthStr.toLowerCase());
-                if (monthIndex !== -1) {
-                    const year = new Date().getFullYear();
-                    const date = new Date(year, monthIndex, day, parseInt(legacyTimeMatch[3]), parseInt(legacyTimeMatch[4]));
-                    if (isValid(date)) return format(date, fmt);
-                }
-            }
-
-            // Fallback: try native Date parsing
             const date = new Date(val);
-            if (isValid(date) && date.getFullYear() > 2000) return format(date, fmt);
+            if (isValid(date)) return format(date, fmt);
         } catch { }
-        return val;
+        return val.split('T')[0] || val;
     };
 
     const getCellStyle = (val: string): React.CSSProperties => {
@@ -707,11 +672,10 @@ export default function PlannerTable({
                                                 <input
                                                     type="text"
                                                     defaultValue={formatDate(value, 'dd-MM-yyyy')}
-                                                    placeholder="DD-MM-YYYY"
                                                     className="w-full h-full bg-yellow-50 px-1 border border-yellow-200 rounded text-[9px] focus:outline-none focus:ring-1 focus:ring-indigo-500"
                                                     onBlur={(e) => {
                                                         const newVal = e.target.value.trim();
-                                                        if (newVal !== value) {
+                                                        if (newVal !== formatDate(value, 'dd-MM-yyyy')) {
                                                             onUpdateDetail(order['WO ID'], col, newVal);
                                                         }
                                                     }}
