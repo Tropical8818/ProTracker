@@ -372,4 +372,4 @@ Navigate to **Settings → User Management** to:
 
 For technical support, contact your system administrator.
 
-**ProTracker v6.3.0** - AI-Powered Production Tracker
+**ProTracker v7.0.0** - AI-Powered Production Tracker
