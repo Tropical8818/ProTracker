@@ -11,9 +11,9 @@ export async function POST() {
     }
 
     try {
-        // Retention policy: 12 months (updated from 6)
+        // Retention policy: 3 months
         const cutOffDate = new Date();
-        cutOffDate.setMonth(cutOffDate.getMonth() - 12);
+        cutOffDate.setMonth(cutOffDate.getMonth() - 3);
 
         // Delete old orders (will cascade delete related comments and logs)
         const deletedOrders = await prisma.order.deleteMany({
@@ -38,7 +38,7 @@ export async function POST() {
             details: {
                 deletedOrders: deletedOrders.count,
                 deletedOrphanLogs: deletedOrphanLogs.count,
-                retentionPolicy: '12 months',
+                retentionPolicy: '3 months',
                 cutOffDate: format(cutOffDate, 'yyyy-MM-dd')
             }
         });

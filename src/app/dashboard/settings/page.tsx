@@ -1157,7 +1157,7 @@ export default function SettingsPage() {
 
                                         <div className="border-t border-slate-100 pt-4">
                                             <p className="text-xs text-slate-500 mb-3">
-                                                Retention Policy: Keep 12 months of data.
+                                                Retention Policy: Keep 3 months of data.
                                             </p>
 
                                             <div className="space-y-2">
@@ -1167,14 +1167,14 @@ export default function SettingsPage() {
                                                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
                                                 >
                                                     <Download className="w-4 h-4" />
-                                                    Download Archive (12+ months old data)
+                                                    Download Archive (3+ months old data)
                                                 </button>
 
                                                 {/* Step 2: Delete Old Data */}
                                                 <button
                                                     onClick={async () => {
                                                         if (!confirm(
-                                                            'WARNING: This will PERMANENTLY DELETE all data older than 12 months.\n\n' +
+                                                            'WARNING: This will PERMANENTLY DELETE all data older than 3 months.\n\n' +
                                                             'Make sure you have downloaded the archive first!\n\n' +
                                                             'Continue?'
                                                         )) return;
@@ -1200,7 +1200,7 @@ export default function SettingsPage() {
                                                     className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
-                                                    Delete Old Data (12+ months)
+                                                    Delete Old Data (3+ months)
                                                 </button>
                                             </div>
 

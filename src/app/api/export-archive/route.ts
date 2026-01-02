@@ -16,9 +16,9 @@ export async function GET() {
     }
 
     try {
-        // Retention policy: 12 months
+        // Retention policy: 3 months
         const cutOffDate = new Date();
-        cutOffDate.setMonth(cutOffDate.getMonth() - 12);
+        cutOffDate.setMonth(cutOffDate.getMonth() - 3);
 
         // Fetch old data
         const [orders, logs, comments] = await Promise.all([
@@ -59,7 +59,7 @@ export async function GET() {
         ]);
 
         if (orders.length === 0 && logs.length === 0 && comments.length === 0) {
-            return new NextResponse('No data older than 12 months found to archive.', {
+            return new NextResponse('No data older than 3 months found to archive.', {
                 status: 200,
                 headers: {
                     'Content-Type': 'text/plain',
