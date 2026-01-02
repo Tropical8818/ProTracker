@@ -86,7 +86,7 @@ npm run dev
 ### 📸 视觉体验
 
 #### 1. 入口 (Login)
-令人惊艳的深色主题登录界面，采用全新的 v6.5.0 品牌标识。
+令人惊艳的深色主题登录界面，采用全新的 v7.0.0 品牌标识。
 ![Login Screen](public/screenshots/login.png)
 
 #### 2. 指挥中心 (Dashboard)
@@ -114,6 +114,7 @@ https://protracker.puppy101.dpdns.org/
 ---
 
 ## 📝 更新日志摘要
+*   **v7.0.0**: 可配置 AI 可见性，增强 AI 隐私（严格 ID 模式），主管 Excel 导入权限，以及集中化版本管理。
 *   **v6.5.0**: Docker 生产环境就绪 (Node 22, Watcher 修复, CVE 修复).
 *   **v6.4.0**: 新增工单删除功能 & 看板对齐修复。
 *   **v6.3.0**: 引入超级编辑模式 (Super Edit)。

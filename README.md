@@ -96,7 +96,7 @@ Visit http://localhost:3000
 ### Visual Experience
 
 #### 1. The Gateway (Login)
-Stunning dark-themed login portal with the new v6.5.0 branding.
+Stunning dark-themed login portal with the new v7.0.0 branding.
 ![Login Screen](public/screenshots/login.png)
 
 #### 2. The Command Center (Dashboard)
@@ -124,6 +124,7 @@ Contact author for access: mailto: jkdb0g@whatifthenhow.com
 ---
 
 ## 📝 Changelog highlights
+*   **v7.0.0**: Configurable AI Visibility, Enhanced AI Privacy (Strict ID mode), Supervisor Excel Import, and Centralized Version Management.
 *   **v6.5.0**: Docker Production Support (Node 22, Fixed Watcher, CVE Remediation).
 *   **v6.4.0**: Added Order Deletion & Kiosk Alignment fixes.
 *   **v6.3.0**: Introduced Super Edit Mode.
