@@ -201,6 +201,15 @@ export default function PlannerTable({
     const formatDate = (val: string, fmt = 'dd-MMM') => {
         if (!val) return '';
         try {
+            // Handle YYYY-MM-DD format explicitly to avoid timezone issues
+            const isoMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (isoMatch) {
+                const [, year, month, day] = isoMatch;
+                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                if (isValid(date)) return format(date, fmt);
+            }
+
+            // Fallback for other formats
             const date = new Date(val);
             if (isValid(date)) return format(date, fmt);
         } catch { }
