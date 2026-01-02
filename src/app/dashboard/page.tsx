@@ -1440,7 +1440,7 @@ export default function DashboardPage() {
                         <div className="absolute bottom-full left-0 mb-2 w-auto min-w-[120px] bg-[#4e80ff] text-white text-[10px] p-3 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 animate-in slide-in-from-bottom-2">
                             <div className="font-bold text-xs mb-1 whitespace-nowrap">ProTracker</div>
                             <div className="space-y-0.5 text-slate-300">
-                                <div className="flex justify-between gap-3"><span>Version:</span> <span>6.6.0</span></div>
+                                <div className="flex justify-between gap-3"><span>Version:</span> <span>{APP_VERSION}</span></div>
                                 <div className="flex justify-between gap-3"><span>Developer:</span> <span>Eric</span></div>
                                 <div className="flex justify-between gap-3"><span>License:</span> <span>MIT</span></div>
                             </div>
