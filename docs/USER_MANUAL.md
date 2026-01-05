@@ -328,7 +328,7 @@ Navigate to **Settings → User Management** to:
 *(Admin only)*
 
 - **Export CSV**: Download all production data
-- **Cleanup**: Remove data older than 1 years
+- **Cleanup**: Remove data older than 3 months
 
 ---
 

@@ -57,7 +57,7 @@ OPENAI_API_KEY=sk-your-api-key-here
 ```bash
 npm run dev
 ```
-Visit http://localhost:3000
+Visit http://localhost:3001
 
 ---
 

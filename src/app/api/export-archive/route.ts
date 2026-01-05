@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 export const dynamic = 'force-dynamic';
 
 /**
- * Export data older than 12 months for archival
+ * Export data older than 3 months for archival
  * Returns a combined CSV with Orders, Logs, and Comments sections
  */
 export async function GET() {

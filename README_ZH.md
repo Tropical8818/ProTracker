@@ -18,7 +18,18 @@
 
 ---
 
-## 💡 解决方案：ProTracker
+## � 默认凭据 (Default Credentials)
+首次部署后，使用以下凭据登录 **SuperAdmin** 账户：
+
+*   **员工 ID (UserID)**: `SUPER001`
+*   **默认密码**: `superadmin123`
+
+> [!IMPORTANT]
+> 为确保安全，强烈建议您在首次登录后立即通过"用户管理"设置更改此密码。
+
+---
+
+## �💡 解决方案：ProTracker
 ProTracker 不是要取代 SAP。它是连接重型 ERP 与敏捷团队之间的 **敏捷协同层 (Agile Collaboration Layer)**。
 
 它提供了一个轻量级、实时的可视化界面：
@@ -47,7 +58,7 @@ OPENAI_API_KEY=sk-your-api-key-here
 ```bash
 npm run dev
 ```
-访问 http://localhost:3000
+访问 http://localhost:3001
 
 ---
 

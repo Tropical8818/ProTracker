@@ -1,18 +1,18 @@
-# Production Deployment Guide (V6.1.3)
+# Production Deployment Guide (V7.0.0)
 
-This guide covers two methods to deploy **ProTracker V6.1.3**:
+This guide covers two methods to deploy **ProTracker V7.0.0**:
 1. **Standard Node.js Deployment** (Recommended for Mac Mini servers or simple VPS).
 2. **Docker Deployment** (Recommended for Linux servers or trial runs).
 
 ---
 
-## What's New in V6.1.3
-- **Super Admin Hierarchy**: Only Super Admin can create/promote other admins.
-- **Employee ID Login**: Unified login system using Employee IDs instead of usernames.
-- **Employee ID Privacy**: AI uses anonymous employee IDs to protect employee privacy.
-- **Enhanced User Management**: Special gold badge for Super Admin display.
-- **Professional Kiosk Mode**: Specialized monitor view with auto-scroll.
-- **Enhanced Security**: Role-based access control and password-protected Kiosk unlock.
+## What's New in V7.0.0
+- **Smart Comments**: Order-level collaboration with category tagging (QN, Material, Machine, Hold).
+- **AI Category Analysis**: AI-powered bottleneck detection and trend analysis based on comments.
+- **Configurable AI Visibility**: Hide sensitive columns/steps from AI context.
+- **Enhanced AI Privacy**: Strict Employee ID mode for anonymous data analysis.
+- **Supervisor Excel Import**: Supervisors can now import orders from Excel files.
+- **Multi-tier Employee Cooperation**: Improved collaboration between operators, supervisors, and admins.
 
 ---
 
@@ -59,7 +59,7 @@ You can start the server directly:
 npm start
 ```
 
-The app will run on `http://localhost:3000`.
+The app will run on `http://localhost:3001`.
 
 ### 4. Keep it Running (Process Management)
 To keep the app running in the background and crash-proof, use **PM2**:
@@ -111,8 +111,8 @@ If you want to deploy this image to a remote server, you need to push it to a co
 1.  **Tag the image**:
     Replace `yourusername` with your Docker Hub username.
     ```bash
-    # Tang with version number (Recommended)
-    docker tag protracker yourusername/protracker:v6.3.0
+    # Tag with version number (Recommended)
+    docker tag protracker yourusername/protracker:v7.0.0
 
     # Tag as latest
     docker tag protracker yourusername/protracker:latest
@@ -125,7 +125,7 @@ If you want to deploy this image to a remote server, you need to push it to a co
 
 3.  **Push the images**:
     ```bash
-    docker push yourusername/protracker:v6.3.0
+    docker push yourusername/protracker:v7.0.0
     docker push yourusername/protracker:latest
     ```
 
@@ -133,7 +133,7 @@ If you want to deploy this image to a remote server, you need to push it to a co
 
 ## Method 3: Docker Compose (Recommended for Trial & Production)
 
-This is the fastest way to get V6.1.0 running.
+This is the fastest way to get V7.0.0 running.
 
 ### 1. Prepare Environment
 Ensure your `.env` file has the necessary keys:
