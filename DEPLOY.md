@@ -69,7 +69,7 @@ To keep the app running in the background and crash-proof, use **PM2**:
 npm install -g pm2
 
 # Start the app with PM2
-pm2 start npm --name "pro-tracker" -- start
+pm2 start npm --name "iprotrax" -- start
 
 # Save the process list to restart on reboot
 pm2 save
@@ -95,12 +95,12 @@ You need to persist the SQLite database file so data isn't lost when the contain
 ```bash
 # Run the container
 docker run -d \
-  -p 3000:3000 \
-  --name tracker \
+  -p 3001:3001 \
+  --name iprotrax \
   -v $(pwd)/prisma:/app/prisma \
   -e DATABASE_URL="file:/app/prisma/dev.db" \
   -e OPENAI_API_KEY="your-api-key-here" \
-  protracker
+  iprotrax
 ```
 
 *Note: The `-v $(pwd)/prisma:/app/prisma` flag mounts your local `prisma` directory (containing `dev.db`) into the container.*
@@ -167,7 +167,7 @@ docker-compose up -d --build
    ```
 
 2. **Access the App**:
-   Open browser at `http://<server-ip>:3000`.
+   Open browser at `http://<server-ip>:3001`.
 
 3. **Create Admin User**:
    If specific admin setup is required, ensure you have the initial credentials or register via the `/register` page (if public registration is enabled).

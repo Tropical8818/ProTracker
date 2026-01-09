@@ -169,7 +169,7 @@ Simplified, touch-friendly interface for operators on the floor.
 
 ### DEMO
 https://iprotrax.work
-Contact author for access: mailto: jkdb0g@whatifthenhow.com
+Contact author for access: jkdb0g@whatifthenhow.com
 
 ---
 

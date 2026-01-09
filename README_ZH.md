@@ -170,7 +170,7 @@ npm run dev
 
 ### 演示 (DEMO)
 https://iprotrax.work
-联系作者获取访问权限: mailto: jkdb0g@whatifthenhow.com
+联系作者获取访问权限: jkdb0g@whatifthenhow.com
 
 ---
 

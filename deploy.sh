@@ -41,6 +41,6 @@ docker image prune -f
 echo ""
 echo "✅ Deployment complete!"
 echo "   - App running at: http://localhost:3001"
-echo "   - Timezone: Asia/Shanghai"
+echo "   - Timezone: Asia/Singapore"
 echo ""
 echo "📜 View logs with: docker-compose logs -f"
