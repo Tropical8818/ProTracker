@@ -55,7 +55,10 @@ graph TD
         AI[AI Copilot]
     end
 
-    Supervisor["Supervisor / Super Edit (主管/超级编辑)"]
+    subgraph Management ["Management (管理层)"]
+        Supervisor["Supervisor / Super Edit (主管/超级编辑)"]
+        Admin["Admin / System Control (管理员/系统控制)"]
+    end
 
     %% Connections
     SAP -->|"1. Auto-Import (Excel)"| Core
@@ -65,7 +68,7 @@ graph TD
     Core <--> AI
     AI -->|"Risk Analysis"| Supervisor
     Core -->|"4. Monitoring & Correction"| Supervisor
-    Core -->|"5. CSV Export"| Supervisor
+    Core -->|"5. CSV Export & Logs (CSV导出/日志)"| Admin
     Supervisor -.->|"6. Reconciliation"| SAP
     Tech <-->|"Step Collaboration (工步级协同)"| Supervisor
 
@@ -74,6 +77,7 @@ graph TD
     classDef core fill:#4f46e5,stroke:#333,stroke-width:2px,color:white;
     classDef kiosk fill:#059669,stroke:#333,stroke-width:2px,color:white;
     classDef super fill:#d97706,stroke:#333,stroke-width:2px,color:white;
+    classDef admin fill:#b45309,stroke:#333,stroke-width:2px,color:white;
     classDef db fill:#fff,stroke:#333,stroke-width:2px;
     classDef shop fill:#f59e0b,stroke:#333,stroke-width:2px,color:black;
 
@@ -81,6 +85,7 @@ graph TD
     class Core core;
     class Kiosk kiosk;
     class Supervisor super;
+    class Admin admin;
     class DB db;
     class Tech shop;
 ```
