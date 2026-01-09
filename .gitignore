@@ -48,3 +48,13 @@ next-env.d.ts
 
 # PPT template (internal use only)
 docs/ProTracker_PPT_Template.md
+
+# Debug & One-off Scripts
+scripts/check_*.js
+scripts/test-*.js
+scripts/test-*.ts
+scripts/debug_*.txt
+scripts/diagnose-*.ts
+scripts/create-test-*.js
+scripts/create-test-*.ts
+scripts/validate-session.ts
