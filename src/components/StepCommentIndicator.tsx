@@ -56,7 +56,7 @@ export function StepCommentIndicator({ orderId, stepName, onClick }: Props) {
         <button
             onClick={onClick}
             className="relative inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
-            title={`${stats!.total} 条消息${hasUnread ? `，${stats!.unread} 条未读` : ''}`}
+            title={`${stats!.total} messages${hasUnread ? `, ${stats!.unread} unread` : ''}`}
         >
             <MessageCircle
                 size={16}

@@ -32,13 +32,13 @@ export function CommentList({ orderId, stepName }: Props) {
     };
 
     if (loading) {
-        return <div className="text-sm text-gray-500 text-center py-4">加载中...</div>;
+        return <div className="text-sm text-gray-500 text-center py-4">Loading...</div>;
     }
 
     if (comments.length === 0) {
         return (
             <div className="text-sm text-gray-400 text-center py-8">
-                暂无消息
+                No messages
             </div>
         );
     }
@@ -58,10 +58,10 @@ export function CommentList({ orderId, stepName }: Props) {
 
     const getCategoryLabel = (category: string) => {
         switch (category) {
-            case 'MATERIAL_SHORTAGE': return '缺料';
-            case 'EQUIPMENT_FAILURE': return '设备故障';
-            case 'QUALITY_ISSUE': return '质量异常';
-            default: return '一般';
+            case 'MATERIAL_SHORTAGE': return 'Material';
+            case 'EQUIPMENT_FAILURE': return 'Equipment';
+            case 'QUALITY_ISSUE': return 'Quality';
+            default: return 'General';
         }
     };
 
@@ -80,8 +80,8 @@ export function CommentList({ orderId, stepName }: Props) {
                                     {comment.user.username}
                                 </span>
                                 <span className="text-xs text-gray-500">
-                                    {comment.user.role === 'admin' ? '管理员' :
-                                        comment.user.role === 'supervisor' ? '主管' : '工人'}
+                                    {comment.user.role === 'admin' ? 'Admin' :
+                                        comment.user.role === 'supervisor' ? 'Supervisor' : 'Worker'}
                                 </span>
                                 <span className="text-xs px-2 py-0.5 bg-gray-100 rounded">
                                     {getCategoryLabel(comment.category)}
@@ -89,7 +89,7 @@ export function CommentList({ orderId, stepName }: Props) {
                             </div>
 
                             <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                {comment.content || comment.note || '(无内容)'}
+                                {comment.content || comment.note || '(No Content)'}
                             </p>
 
                             {comment.triggeredStatus && (
@@ -98,7 +98,7 @@ export function CommentList({ orderId, stepName }: Props) {
                                         comment.triggeredStatus === 'QN' ? 'bg-yellow-100 text-yellow-700' :
                                             'bg-gray-100 text-gray-700'
                                         }`}>
-                                        状态已更新为: {comment.triggeredStatus}
+                                        Status updated to: {comment.triggeredStatus}
                                     </span>
                                 </div>
                             )}
@@ -106,7 +106,7 @@ export function CommentList({ orderId, stepName }: Props) {
                     </div>
 
                     <div className="text-xs text-gray-400">
-                        {new Date(comment.createdAt).toLocaleString('zh-CN')}
+                        {new Date(comment.createdAt).toLocaleString()}
                     </div>
                 </div>
             ))}

@@ -17,9 +17,9 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
 
     const CategorySelection = () => (
         <div className="space-y-3">
-            <h3 className="text-lg font-bold mb-4">报告问题</h3>
+            <h3 className="text-lg font-bold mb-4">Report Issue</h3>
             <p className="text-sm text-gray-600 mb-4">
-                选择问题类型后，系统会自动更新工单状态
+                Select issue type to automatically update order status
             </p>
 
             <button
@@ -28,8 +28,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <Package className="text-orange-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">缺料</div>
-                    <div className="text-sm text-gray-600">物料不足，工单将被暂停(HOLD)</div>
+                    <div className="font-bold">Material Shortage</div>
+                    <div className="text-sm text-gray-600">Insufficient material, order will be HOLD</div>
                 </div>
             </button>
 
@@ -39,8 +39,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <Wrench className="text-red-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">设备故障</div>
-                    <div className="text-sm text-gray-600">机器或工具故障，工单将被暂停(HOLD)</div>
+                    <div className="font-bold">Equipment Failure</div>
+                    <div className="text-sm text-gray-600">Machine/tool failure, order will be HOLD</div>
                 </div>
             </button>
 
@@ -50,8 +50,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <AlertTriangle className="text-yellow-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">质量异常</div>
-                    <div className="text-sm text-gray-600">发现质量问题，工单将标记为QN</div>
+                    <div className="font-bold">Quality Issue</div>
+                    <div className="text-sm text-gray-600">Quality problem found, order marked as QN</div>
                 </div>
             </button>
 
@@ -61,8 +61,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <MessageSquare className="text-blue-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">一般咨询</div>
-                    <div className="text-sm text-gray-600">询问或报告，不改变工单状态</div>
+                    <div className="font-bold">General Inquiry</div>
+                    <div className="text-sm text-gray-600">Question or report, status unchanged</div>
                 </div>
             </button>
         </div>
@@ -88,7 +88,7 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             await onSubmit(payload);
             onClose();
         } catch (error) {
-            alert('提交失败: ' + error);
+            alert('Submission Failed: ' + error);
         } finally {
             setSubmitting(false);
         }
@@ -105,18 +105,18 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
                 {step === 'details' && (
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold">
-                            {category === 'MATERIAL_SHORTAGE' && '缺料详情'}
-                            {category === 'EQUIPMENT_FAILURE' && '设备故障详情'}
-                            {category === 'QUALITY_ISSUE' && '质量异常详情'}
-                            {category === 'GENERAL' && '一般咨询'}
+                            {category === 'MATERIAL_SHORTAGE' && 'Material Shortage Details'}
+                            {category === 'EQUIPMENT_FAILURE' && 'Equipment Failure Details'}
+                            {category === 'QUALITY_ISSUE' && 'Quality Issue Details'}
+                            {category === 'GENERAL' && 'General Inquiry'}
                         </h3>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">详细说明 *</label>
+                            <label className="block text-sm font-medium mb-1">Description *</label>
                             <textarea
                                 className="w-full p-2 border rounded"
                                 rows={4}
-                                placeholder="请描述具体情况..."
+                                placeholder="Please describe the situation..."
                                 value={formData.note || ''}
                                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                             />
@@ -128,14 +128,14 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
                                 className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
                                 disabled={submitting}
                             >
-                                返回
+                                Back
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={!formData.note || submitting}
                                 className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {submitting ? '提交中...' : '提交'}
+                                {submitting ? 'Submitting...' : 'Submit'}
                             </button>
                         </div>
                     </div>
