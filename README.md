@@ -68,6 +68,8 @@ graph TD
     AI -->|"Risk Analysis"| Supervisor
     Core -->|"4. Monitoring & Correction"| Supervisor
     Core -->|"5. CSV Export & Logs"| Admin
+    Admin -->|"7. Manage Lines & Users"| Core
+    Admin -.->|"8. Control AI Context"| AI
     Supervisor -.->|"6. Reconciliation"| SAP
     Tech <-->|"Step Collaboration"| Supervisor
 

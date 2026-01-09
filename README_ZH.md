@@ -69,6 +69,8 @@ graph TD
     AI -->|"Risk Analysis"| Supervisor
     Core -->|"4. Monitoring & Correction"| Supervisor
     Core -->|"5. CSV Export & Logs (CSV导出/日志)"| Admin
+    Admin -->|"7. Manage Lines & Users (产线管理 & 用户控制)"| Core
+    Admin -.->|"8. Control AI Context (AI能力控制)"| AI
     Supervisor -.->|"6. Reconciliation"| SAP
     Tech <-->|"Step Collaboration (工步级协同)"| Supervisor
 
