@@ -74,6 +74,10 @@ graph TD
     Supervisor -.->|"6. Reconciliation"| SAP
     Tech <-->|"Step Collaboration (工步级协同)"| Supervisor
 
+    %% Layout Enforcement
+    SAP ~~~ Tech
+    Supervisor ~~~ Admin
+
     %% Styling
     classDef sap fill:#1e3a8a,stroke:#333,stroke-width:2px,color:white;
     classDef core fill:#4f46e5,stroke:#333,stroke-width:2px,color:white;
