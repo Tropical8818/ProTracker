@@ -45,6 +45,7 @@ graph TD
 
     subgraph DynamicShop ["Dynamic Shop"]
         Worker[Worker / Digital Updates]
+        Kiosk[Kiosk Mode]
     end
 
     subgraph AgileCollaboration ["Agile Collaboration"]
@@ -53,7 +54,6 @@ graph TD
         AI[AI Copilot]
     end
 
-    Kiosk[Kiosk Mode]
     Supervisor[Supervisor / Super Edit]
 
     %% Connections
