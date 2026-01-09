@@ -44,7 +44,7 @@ graph TD
     end
 
     subgraph DynamicShop ["Dynamic Shop"]
-        Worker[Worker / Digital Updates]
+        Tech[Technician / Digital Updates]
         Kiosk[Kiosk Mode]
     end
 
@@ -59,13 +59,14 @@ graph TD
     %% Connections
     SAP -->|"1. Auto-Import (Excel)"| Core
     Core -->|"2. Real-time Status"| Kiosk
-    Worker -->|"3. Digital Updates"| Core
+    Tech -->|"3. Digital Updates"| Core
     Core -->|"Store"| DB
     Core <--> AI
     AI -->|"Risk Analysis"| Supervisor
     Core -->|"4. Monitoring & Correction"| Supervisor
     Core -->|"5. CSV Export"| Supervisor
     Supervisor -.->|"6. Reconciliation"| SAP
+    Tech <-->|"Step Collaboration"| Supervisor
 
     %% Styling
     classDef sap fill:#1e3a8a,stroke:#333,stroke-width:2px,color:white;
@@ -80,7 +81,7 @@ graph TD
     class Kiosk kiosk;
     class Supervisor super;
     class DB db;
-    class Worker shop;
+    class Tech shop;
 ```
 
 ---
