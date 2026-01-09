@@ -46,6 +46,7 @@ graph TD
 
     subgraph DynamicShop ["Dynamic Shop (动态车间)"]
         Worker[Worker / Digital Updates]
+        Kiosk[Kiosk Mode (电子看板)]
     end
 
     subgraph AgileCollaboration ["Agile Collaboration (敏捷协同)"]
@@ -54,7 +55,6 @@ graph TD
         AI[AI Copilot]
     end
 
-    Kiosk[Kiosk Mode (电子看板)]
     Supervisor[Supervisor / Super Edit (主管/超级编辑)]
 
     %% Connections
