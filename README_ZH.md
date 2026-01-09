@@ -18,7 +18,7 @@
 
 ---
 
-## � 默认凭据 (Default Credentials)
+## 🔐 默认凭据 (Default Credentials)
 首次部署后，使用以下凭据登录 **SuperAdmin** 账户：
 
 *   **员工 ID (UserID)**: `SUPER001`
