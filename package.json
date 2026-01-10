@@ -9,7 +9,8 @@
     "dev:watch": "concurrently \"npm run dev\" \"npm run watcher\"",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "prepare": "husky"
   },
   "dependencies": {
     "@prisma/client": "6.19.1",
@@ -36,11 +37,18 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "eslint --fix"
+    ]
   }
 }

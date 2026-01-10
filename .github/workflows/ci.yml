@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "enterprise-upgrade" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Lint (ESLint)
+      run: npm run lint
+
+    # We need to build to check for type errors and build failures
+    - name: Build (Next.js)
+      run: npm run build
+      env:
+        # Skip env validation during build if we don't have secrets in GH Actions yet
+        SKIP_ENV_VALIDATION: true 
+        # Or provide dummy values if needed
+        OPENAI_API_KEY: "dummy-key-for-build"
