@@ -23,7 +23,7 @@ iProTraX is not a replacement for SAP. It is the **Agile Collaboration Layer** t
 It provides a lightweight, real-time visual interface that:
 *   **Visualizes the Invisible**: Tracks the micro-steps and real-time status that SAP misses.
 *   **Empowers "Super Edit"**: Allows Supervisors to correct data instantly (e.g., bypassing a "stuck" step) without waiting for IT tickets.
-*   **Kiosk Mode**: Replaces "asking via WeChat" with large, auto-updating shop floor monitors.
+*   **Kiosk Mode**: Replaces "asking via WhatsApp" with large, auto-updating shop floor monitors.
 *   **AI-Driven Insights**: A built-in AI assistant that analyzes risk and generates reports, replacing manual data crunching.
 
 ```mermaid
