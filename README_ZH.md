@@ -159,7 +159,7 @@ flowchart TB
 
     subgraph Data ["Data Persistence (数据持久化)"]
         SQLite[(SQLite Database)]
-        Excel[Excel Files (.xlsx)]
+        Excel["Excel Files (.xlsx)"]
     end
 
     subgraph AI ["Intelligence (智能)"]

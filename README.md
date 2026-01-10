@@ -156,7 +156,7 @@ flowchart TB
 
     subgraph Data ["Data Persistence"]
         SQLite[(SQLite Database)]
-        Excel[Excel Files (.xlsx)]
+        Excel["Excel Files (.xlsx)"]
     end
 
     subgraph AI ["Intelligence"]
