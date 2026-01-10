@@ -1,0 +1,40 @@
+{
+    "Common": {
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "submit": "Submit"
+    },
+    "StructuredCommentDialog": {
+        "title": "Report Issue",
+        "subtitle": "Select issue type to automatically update order status",
+        "categories": {
+            "material": {
+                "title": "Material Shortage",
+                "desc": "Insufficient material, order will be HOLD"
+            },
+            "equipment": {
+                "title": "Equipment Failure",
+                "desc": "Machine/tool failure, order will be HOLD"
+            },
+            "quality": {
+                "title": "Quality Issue",
+                "desc": "Quality problem found, order marked as QN"
+            },
+            "general": {
+                "title": "General Inquiry",
+                "desc": "Question or report, status unchanged"
+            }
+        },
+        "details": {
+            "materialTitle": "Material Shortage Details",
+            "equipmentTitle": "Equipment Failure Details",
+            "qualityTitle": "Quality Issue Details",
+            "generalTitle": "General Inquiry",
+            "descLabel": "Description *",
+            "placeholder": "Please describe the situation...",
+            "back": "Back",
+            "submitting": "Submitting..."
+        }
+    }
+}

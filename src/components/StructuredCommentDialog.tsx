@@ -1,25 +1,37 @@
 'use client';
 import { useState } from 'react';
 import { Package, Wrench, AlertTriangle, MessageSquare, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+
+interface CommentData {
+    orderId: string;
+    stepName: string;
+    category: string;
+    structuredData: Record<string, string>;
+    note: string;
+    triggeredStatus: string | null;
+}
 
 interface Props {
     orderId: string;
     stepName: string;
     onClose: () => void;
-    onSubmit: (data: any) => Promise<void>;
+    onSubmit: (data: CommentData) => Promise<void>;
 }
 
 export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }: Props) {
     const [step, setStep] = useState<'category' | 'details'>('category');
     const [category, setCategory] = useState<string>('');
-    const [formData, setFormData] = useState<any>({});
+    const [formData, setFormData] = useState<{ note?: string }>({});
     const [submitting, setSubmitting] = useState(false);
+
+    const t = useTranslations('StructuredCommentDialog');
 
     const CategorySelection = () => (
         <div className="space-y-3">
-            <h3 className="text-lg font-bold mb-4">Report Issue</h3>
+            <h3 className="text-lg font-bold mb-4">{t('title')}</h3>
             <p className="text-sm text-gray-600 mb-4">
-                Select issue type to automatically update order status
+                {t('subtitle')}
             </p>
 
             <button
@@ -28,8 +40,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <Package className="text-orange-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">Material Shortage</div>
-                    <div className="text-sm text-gray-600">Insufficient material, order will be HOLD</div>
+                    <div className="font-bold">{t('categories.material.title')}</div>
+                    <div className="text-sm text-gray-600">{t('categories.material.desc')}</div>
                 </div>
             </button>
 
@@ -39,8 +51,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <Wrench className="text-red-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">Equipment Failure</div>
-                    <div className="text-sm text-gray-600">Machine/tool failure, order will be HOLD</div>
+                    <div className="font-bold">{t('categories.equipment.title')}</div>
+                    <div className="text-sm text-gray-600">{t('categories.equipment.desc')}</div>
                 </div>
             </button>
 
@@ -50,8 +62,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <AlertTriangle className="text-yellow-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">Quality Issue</div>
-                    <div className="text-sm text-gray-600">Quality problem found, order marked as QN</div>
+                    <div className="font-bold">{t('categories.quality.title')}</div>
+                    <div className="text-sm text-gray-600">{t('categories.quality.desc')}</div>
                 </div>
             </button>
 
@@ -61,8 +73,8 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
             >
                 <MessageSquare className="text-blue-600" size={24} />
                 <div className="text-left">
-                    <div className="font-bold">General Inquiry</div>
-                    <div className="text-sm text-gray-600">Question or report, status unchanged</div>
+                    <div className="font-bold">{t('categories.general.title')}</div>
+                    <div className="text-sm text-gray-600">{t('categories.general.desc')}</div>
                 </div>
             </button>
         </div>
@@ -81,7 +93,7 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
                 stepName,
                 category,
                 structuredData: { category, ...formData },
-                note: formData.note,
+                note: formData.note || '',
                 triggeredStatus
             };
 
@@ -105,18 +117,18 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
                 {step === 'details' && (
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold">
-                            {category === 'MATERIAL_SHORTAGE' && 'Material Shortage Details'}
-                            {category === 'EQUIPMENT_FAILURE' && 'Equipment Failure Details'}
-                            {category === 'QUALITY_ISSUE' && 'Quality Issue Details'}
-                            {category === 'GENERAL' && 'General Inquiry'}
+                            {category === 'MATERIAL_SHORTAGE' && t('details.materialTitle')}
+                            {category === 'EQUIPMENT_FAILURE' && t('details.equipmentTitle')}
+                            {category === 'QUALITY_ISSUE' && t('details.qualityTitle')}
+                            {category === 'GENERAL' && t('details.generalTitle')}
                         </h3>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1">Description *</label>
+                            <label className="block text-sm font-medium mb-1">{t('details.descLabel')}</label>
                             <textarea
                                 className="w-full p-2 border rounded"
                                 rows={4}
-                                placeholder="Please describe the situation..."
+                                placeholder={t('details.placeholder')}
                                 value={formData.note || ''}
                                 onChange={(e) => setFormData({ ...formData, note: e.target.value })}
                             />
@@ -128,14 +140,14 @@ export function StructuredCommentDialog({ orderId, stepName, onClose, onSubmit }
                                 className="flex-1 py-2 border rounded-lg hover:bg-gray-50"
                                 disabled={submitting}
                             >
-                                Back
+                                {t('details.back')}
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={!formData.note || submitting}
                                 className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                             >
-                                {submitting ? 'Submitting...' : 'Submit'}
+                                {submitting ? t('details.submitting') : t('Common.submit')}
                             </button>
                         </div>
                     </div>

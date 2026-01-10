@@ -1,6 +1,5 @@
 import { cookies } from 'next/headers';
-import { prisma } from './prisma';
-import bcrypt from 'bcryptjs';
+import { encrypt, decrypt } from './session';
 
 const SESSION_COOKIE = 'protracker_sess';
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
@@ -17,16 +16,19 @@ export interface Session {
 
 export async function createSession(userId: string, username: string, role: string): Promise<void> {
     const duration = role === 'kiosk' ? KIOSK_SESSION_DURATION : SESSION_DURATION;
+    const expiresAt = Date.now() + duration;
+
     const session: Session = {
         userId,
         username,
         role: role as UserRole,
-        expiresAt: Date.now() + duration
+        expiresAt
     };
 
+    const encryptedSession = await encrypt(session as unknown as import('jose').JWTPayload);
     const cookieStore = await cookies();
 
-    cookieStore.set(SESSION_COOKIE, JSON.stringify(session), {
+    cookieStore.set(SESSION_COOKIE, encryptedSession, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -42,7 +44,16 @@ export async function getSession(): Promise<Session | null> {
     if (!cookie) return null;
 
     try {
-        const session: Session = JSON.parse(cookie.value);
+        const payload = await decrypt(cookie.value);
+
+        // Convert payload back to typed Session
+        const session: Session = {
+            userId: payload.userId as string,
+            username: payload.username as string,
+            role: payload.role as UserRole,
+            expiresAt: payload.expiresAt as number
+        };
+
         if (session.expiresAt < Date.now()) {
             await destroySession();
             return null;

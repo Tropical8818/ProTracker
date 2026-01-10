@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+import { decrypt } from '@/lib/session';
+
+export async function middleware(request: NextRequest) {
     const sessionCookie = request.cookies.get('protracker_sess');
 
     if (!sessionCookie) {
@@ -9,7 +11,7 @@ export function middleware(request: NextRequest) {
     }
 
     try {
-        const session = JSON.parse(sessionCookie.value);
+        const session = await decrypt(sessionCookie.value);
         const { role } = session;
         const { pathname } = request.nextUrl;
 
@@ -19,8 +21,12 @@ export function middleware(request: NextRequest) {
                 return NextResponse.redirect(new URL('/dashboard/kiosk', request.url));
             }
         }
-    } catch (e) {
-        // Invalid session cookie
+    } catch {
+        // Invalid session cookie - optionally clear it or redirect to login
+        // For now, treat as no session
+        const response = NextResponse.next();
+        response.cookies.delete('protracker_sess');
+        return response;
     }
 
     return NextResponse.next();

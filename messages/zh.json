@@ -1,0 +1,40 @@
+{
+    "Common": {
+        "loading": "加载中...",
+        "save": "保存",
+        "cancel": "取消",
+        "submit": "提交"
+    },
+    "StructuredCommentDialog": {
+        "title": "报告问题",
+        "subtitle": "选择问题类型以自动更新订单状态",
+        "categories": {
+            "material": {
+                "title": "物料短缺",
+                "desc": "物料不足，订单将暂停 (HOLD)"
+            },
+            "equipment": {
+                "title": "设备故障",
+                "desc": "机器/工具故障，订单将暂停 (HOLD)"
+            },
+            "quality": {
+                "title": "质量问题",
+                "desc": "发现质量问题，订单标记为 QN"
+            },
+            "general": {
+                "title": "常规咨询",
+                "desc": "提问或汇报，状态不变"
+            }
+        },
+        "details": {
+            "materialTitle": "物料短缺详情",
+            "equipmentTitle": "设备故障详情",
+            "qualityTitle": "质量问题详情",
+            "generalTitle": "常规咨询",
+            "descLabel": "描述 *",
+            "placeholder": "请描述具体情况...",
+            "back": "返回",
+            "submitting": "提交中..."
+        }
+    }
+}

@@ -25,6 +25,7 @@ import dynamic from 'next/dynamic';
 import AIChatPanel from '@/components/AIChatPanel';
 import { MessageNotification } from '@/components/MessageNotification';
 import { calculateECD } from '@/lib/ecd';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 // Dynamic import for barcode scanner (client-only)
 const BarcodeScanner = dynamic(() => import('@/components/BarcodeScanner'), { ssr: false });
@@ -569,6 +570,8 @@ export default function DashboardPage() {
         document.body.removeChild(link);
     };
 
+    // Unused log functions removed for linting
+    /* 
     const clearLogs = () => {
         setConfirmingClear(true);
     };
@@ -593,6 +596,7 @@ export default function DashboardPage() {
             setTimeout(() => setLogsNotification(null), 5000);
         }
     };
+    */
 
     const handleImportFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -657,7 +661,7 @@ export default function DashboardPage() {
             } else {
                 setImportMsg({ type: 'error', text: data.error || 'Import failed' });
             }
-        } catch (error) {
+        } catch {
             setImportMsg({ type: 'error', text: 'Network error during import' });
         } finally {
             setIsImporting(false);
@@ -668,6 +672,7 @@ export default function DashboardPage() {
 
     // Sort orders by priority (Red first, then Yellow, then normal)
     const sortedOrders = [...orders].sort((a, b) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const getPriority = (order: any) => {
             if (order.priority === 'Red') return 3;
             if (order.priority === 'Yellow') return 2;
@@ -719,11 +724,13 @@ export default function DashboardPage() {
                         className="flex items-center hover:opacity-80 transition-opacity cursor-pointer"
                         title="Return to Home"
                     >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/logo.png" alt="iProTraX" className="h-9 w-auto" />
                     </button>
 
                     {/* Right: Product Selector & Nav */}
                     <div className="flex items-center gap-2 justify-end min-w-0">
+                        <LanguageSwitcher />
                         {/* Product Selector - Outside overflow container to prevent clipping */}
                         <div className="relative shrink-0">
                             <button
@@ -1424,6 +1431,7 @@ export default function DashboardPage() {
                                         else if (mode === 'WIP') status = 'WIP';
                                         else if (mode === 'Complete') status = format(new Date(), 'dd-MMM, HH:mm');
                                         try {
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             const updates = targets.map((o: any) => ({
                                                 woId: o['WO ID'],
                                                 step,
@@ -1668,6 +1676,7 @@ export default function DashboardPage() {
                     if (matchedOrder) {
                         // Play beep sound
                         try {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
                             if (AudioContext) {
                                 const ctx = new AudioContext();
@@ -1797,6 +1806,7 @@ export default function DashboardPage() {
                                 {importPreview.validationErrors?.length > 0 && (
                                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 max-h-32 overflow-y-auto">
                                         <div className="text-xs font-bold text-red-800 mb-1">Errors Found:</div>
+                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                         {importPreview.validationErrors.map((err: any, i: number) => (
                                             <div key={i} className="text-xs text-red-600">Row {err.row}: {err.error}</div>
                                         ))}
