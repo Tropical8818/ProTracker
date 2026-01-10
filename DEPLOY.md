@@ -112,7 +112,7 @@ If you want to deploy this image to a remote server, you need to push it to a co
     Replace `yourusername` with your Docker Hub username.
     ```bash
     # Tag with version number (Recommended)
-    docker tag protracker yourusername/protracker:v7.0.0
+    docker tag protracker yourusername/protracker:v8.0.0
 
     # Tag as latest
     docker tag protracker yourusername/protracker:latest
@@ -125,7 +125,7 @@ If you want to deploy this image to a remote server, you need to push it to a co
 
 3.  **Push the images**:
     ```bash
-    docker push yourusername/protracker:v7.0.0
+    docker push yourusername/protracker:v8.0.0
     docker push yourusername/protracker:latest
     ```
 

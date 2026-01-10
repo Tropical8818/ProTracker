@@ -372,4 +372,4 @@ Navigate to **Settings → User Management** to:
 
 For technical support, contact your system administrator.
 
-**iProTraX v7.0.0** - AI-Powered Production Tracker
+**iProTraX v8.0.0** - AI-Powered Production Tracker

@@ -196,7 +196,7 @@ flowchart TB
 ### 📸 视觉体验
 
 #### 1. 入口 (Login)
-令人惊艳的深色主题登录界面，采用全新的 v7.0.0 品牌标识。
+令人惊艳的深色主题登录界面，采用全新的 v8.0.0 品牌标识，支持国际化。
 ![Login Screen](public/screenshots/login.png)
 
 #### 2. 指挥中心 (Dashboard)
@@ -224,6 +224,7 @@ https://iprotrax.work
 ---
 
 ## 📝 更新日志摘要
+*   **v8.0.0**: 企业版 - 完整国际化支持（中英文）、增强安全性（Session加密）、全面测试框架（Vitest/Playwright）、性能优化、改进的Docker自动部署。
 *   **v7.0.0**: 工单级智能评论与多层级员工协作能力，可配置 AI 可见性，增强 AI 隐私（严格 ID 模式），主管 Excel 导入权限。
 *   **v6.5.0**: Docker 生产环境就绪 (Node 22, Watcher 修复, CVE 修复).
 *   **v6.4.0**: 新增工单删除功能 & 看板对齐修复。

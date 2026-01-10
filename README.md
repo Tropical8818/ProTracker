@@ -193,7 +193,7 @@ flowchart TB
 ### Visual Experience
 
 #### 1. The Gateway (Login)
-Stunning dark-themed login portal with the new v7.0.0 branding.
+Stunning dark-themed login portal with the new v8.0.0 branding featuring internationalization support.
 ![Login Screen](public/screenshots/login.png)
 
 #### 2. The Command Center (Dashboard)
@@ -221,6 +221,7 @@ Contact author for access: contact@iprotrax.work
 ---
 
 ## 📝 Changelog highlights
+*   **v8.0.0**: Enterprise Edition - Full internationalization (English/Chinese), enhanced security (session encryption), comprehensive testing framework (Vitest/Playwright), performance optimizations, and improved Docker deployment automation.
 *   **v7.0.0**: Smart Comments (Order-level Collaboration), Configurable AI Visibility, Enhanced AI Privacy (Strict ID mode), Supervisor Excel Import, and Multi-tier Employee Cooperation.
 *   **v6.5.0**: Docker Production Support (Node 22, Fixed Watcher, CVE Remediation).
 *   **v6.4.0**: Added Order Deletion & Kiosk Alignment fixes.
