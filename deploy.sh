@@ -15,9 +15,12 @@ if [[ -n $(git status -s) ]]; then
         echo "   → Backed up data/config.json"
     fi
     
-    # Reset to remote
-    git fetch origin main
-    git reset --hard origin/main
+    # Try to reset to remote
+    if git fetch origin main 2>/dev/null; then
+        git reset --hard origin/main
+    else
+        echo "   ⚠️  Could not fetch from remote (network issue). Using local code."
+    fi
     
     # Restore config backup if exists
     if [[ -f data/config.json.backup ]]; then
@@ -25,8 +28,10 @@ if [[ -n $(git status -s) ]]; then
         echo "   → Restored data/config.json"
     fi
 else
-    # No local changes, just pull normally
-    git pull origin main
+    # No local changes, try to pull normally
+    if ! git pull origin main 2>/dev/null; then
+        echo "   ⚠️  Could not pull from remote (network issue). Using local code."
+    fi
 fi
 
 # 2. Rebuild and Restart containers
