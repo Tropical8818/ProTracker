@@ -292,18 +292,51 @@
         "userInfoUpdatedSuccess": "用户信息更新成功",
         "failedToUpdateUserInfo": "更新用户信息失败",
         "errorUpdatingUserInfo": "更新用户信息时出错",
-        "confirmDeleteUser": "确定要删除用户 {username} 吗？",
-        "failedToDeleteUser": "删除用户失败",
-        "errorDeletingUser": "删除用户时出错",
-        "passwordUpdatedSuccess": "密码更新成功",
-        "failedToResetPassword": "重置密码失败",
-        "errorResettingPassword": "重置密码时出错",
-        "setNewPasswordFor": "为 {username} 设置新密码",
-        "enterNewPassword": "输入新密码",
         "setPassword": "设置密码",
         "createUser": "创建用户",
         "saveChanges": "保存修改",
         "updatingUser": "正在更新 {username}"
+    },
+    "Kiosk": {
+        "title": "车间电子看板",
+        "monitorMode": "显示模式",
+        "adminMode": "管理模式",
+        "clickLogoExit": "点击 Logo 退出",
+        "selectProduct": "选择生产品类",
+        "noProduct": "请选择产品",
+        "stationFilter": "工位过滤：",
+        "allStations": "所有工位",
+        "stats": {
+            "activeOrders": "活动订单",
+            "heldBlocked": "暂停 / 阻塞",
+            "qualityIssues": "质量问题",
+            "inProgress": "进行中"
+        },
+        "table": {
+            "orderTracking": "订单追踪",
+            "state": "状态",
+            "updated": "更新时间",
+            "stepCompleted": "步序已完成",
+            "queueing": "排队中 (前序未完)",
+            "noActiveOrders": "系统中暂无活动订单"
+        },
+        "density": {
+            "comfortable": "舒适视图",
+            "compact": "紧凑视图",
+            "switchComfortable": "切换到舒适视图",
+            "switchCompact": "切换到紧凑视图"
+        },
+        "lock": {
+            "lockConsole": "锁定看板",
+            "unlockConsole": "解锁看板",
+            "secure": "看板已锁定",
+            "enterPass": "请输入 {username} 的密码解锁",
+            "placeholder": "输入密码",
+            "authenticate": "身份验证",
+            "denied": "拒绝访问 • 密码错误",
+            "logout": "退出登录 / 切换用户",
+            "hardwareId": "硬件 ID"
+        }
     },
     "Login": {
         "title": "iProTraX",

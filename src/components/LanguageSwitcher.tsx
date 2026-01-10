@@ -1,6 +1,6 @@
 'use client';
 
-import { Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Props {
@@ -8,14 +8,19 @@ interface Props {
 }
 
 export function LanguageSwitcher({ className = '' }: Props) {
-    const router = useRouter();
+    const [currentLocale, setCurrentLocale] = useState<string>('en');
+
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            const locale = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('NEXT_LOCALE='))
+                ?.split('=')[1] || 'en';
+            setCurrentLocale(locale);
+        }
+    }, []);
 
     const toggleLanguage = () => {
-        const currentLocale = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('NEXT_LOCALE='))
-            ?.split('=')[1] || 'en';
-
         const newLocale = currentLocale === 'en' ? 'zh' : 'en';
 
         // Set cookie with explicit SameSite and path
@@ -28,11 +33,11 @@ export function LanguageSwitcher({ className = '' }: Props) {
     return (
         <button
             onClick={toggleLanguage}
-            className={`p-2.5 rounded-lg transition-all shadow-lg ${className || 'text-slate-500 hover:bg-slate-100'}`}
-            title="Switch Language (English/中文)"
+            className={`p-2.5 rounded-lg transition-all shadow-lg text-2xl ${className || 'text-slate-500 hover:bg-slate-100'}`}
+            title={currentLocale === 'en' ? '切换到中文' : 'Switch to English'}
             aria-label="Switch Language"
         >
-            <Globe className="w-6 h-6" />
+            {currentLocale === 'en' ? '🇨🇳' : '🇺🇸'}
         </button>
     );
 }

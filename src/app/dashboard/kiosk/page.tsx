@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
     Activity, Clock, AlertTriangle, CheckCircle2,
-    ChevronRight, Timer, Layers, Filter, Grid, ChevronDown, Lock, Unlock, X,
+    Layers, Filter, Grid, ChevronDown, Lock, Unlock, X,
     LayoutList, Maximize2, LogOut
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { APP_VERSION } from '@/lib/version';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 interface Order {
     id: string;
@@ -26,6 +28,7 @@ interface Product {
 }
 
 export default function KioskPage() {
+    const t = useTranslations('Kiosk');
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -129,9 +132,9 @@ export default function KioskPage() {
             clearInterval(timeInterval);
             clearInterval(scrollInterval);
         };
-    }, []);
+    }, [viewDensity]);
 
-    const getStatusInfo = (orderData: any, selectedStep: string = 'ALL') => {
+    const getStatusInfo = (orderData: any, selectedStep: string = 'ALL') => { // eslint-disable-line @typescript-eslint/no-explicit-any
         if (selectedStep !== 'ALL') {
             const val = orderData[selectedStep];
             if (!val || val === '') return { label: 'UNPLANNED', color: 'text-slate-500', bg: 'bg-slate-500/10', border: 'border-slate-500/50' };
@@ -198,9 +201,9 @@ export default function KioskPage() {
                         <img src="/logo.png" alt="iProTraX" className="h-12 w-auto" />
                     </div>
                     <div>
-                        <h1 className="text-4xl font-black tracking-tight text-white uppercase">Shop Floor Monitor</h1>
+                        <h1 className="text-4xl font-black tracking-tight text-white uppercase">{t('title')}</h1>
                         <p className="text-indigo-400 font-bold tracking-widest text-sm mt-1 uppercase">
-                            {isLocked ? 'Console Locked • Display Mode' : role === 'kiosk' ? 'Administrative Mode' : 'Click Logo to Exit • Administrative Mode'}
+                            {isLocked ? `${t('lock.secure')} • ${t('monitorMode')}` : role === 'kiosk' ? t('adminMode') : `${t('clickLogoExit')} • ${t('adminMode')}`}
                         </p>
                     </div>
                 </div>
@@ -215,7 +218,7 @@ export default function KioskPage() {
                         >
 
                             <span className="text-xl font-black text-white uppercase tracking-wider">
-                                {products.find(p => p.id === selectedProductId)?.name || 'SELECT PRODUCT'}
+                                {products.find(p => p.id === selectedProductId)?.name || t('noProduct')}
                             </span>
                             {!isLocked && <ChevronDown className={`w-5 h-5 text-indigo-400 transition-transform ${productMenuOpen ? 'rotate-180' : ''}`} />}
                         </button>
@@ -251,10 +254,13 @@ export default function KioskPage() {
                             localStorage.setItem('kioskViewDensity', newDensity);
                         }}
                         className="p-3 rounded-xl border-2 bg-[#1a1a20] border-slate-800 text-slate-400 hover:text-indigo-400 hover:border-indigo-400/50 transition-all"
-                        title={viewDensity === 'comfortable' ? "Switch to Compact View" : "Switch to Comfortable View"}
+                        title={viewDensity === 'comfortable' ? t('density.switchCompact') : t('density.switchComfortable')}
                     >
                         {viewDensity === 'comfortable' ? <LayoutList className="w-6 h-6" /> : <Maximize2 className="w-6 h-6" />}
                     </button>
+
+                    {/* Language Switcher */}
+                    <LanguageSwitcher className="p-3 rounded-xl border-2 bg-[#1a1a20] border-slate-800 text-slate-400 hover:text-indigo-400 hover:border-indigo-400/50 transition-all flex items-center justify-center" />
 
                     {/* Lock/Unlock Toggle */}
                     <button
@@ -270,7 +276,7 @@ export default function KioskPage() {
                         className={`p-3 rounded-xl border-2 transition-all ${isLocked
                             ? 'bg-[#1a1a20] border-slate-800 text-slate-700 hover:text-indigo-500 hover:border-indigo-500/50'
                             : 'bg-emerald-600 border-emerald-400 text-white shadow-[0_0_20px_rgba(16,185,129,0.4)]'}`}
-                        title={isLocked ? "Unlock Console" : "Lock Console"}
+                        title={isLocked ? t('lock.unlockConsole') : t('lock.lockConsole')}
                     >
                         {isLocked ? <Lock className="w-6 h-6" /> : <Unlock className="w-6 h-6" />}
                     </button>
@@ -281,7 +287,7 @@ export default function KioskPage() {
                         {mounted ? format(currentTime, 'HH:mm:ss') : '--:--:--'}
                     </div>
                     <div className="text-slate-500 font-bold tracking-tighter uppercase text-sm" suppressHydrationWarning>
-                        {mounted ? format(currentTime, 'EEEE, MMM do yyyy') : 'Loading...'}
+                        {mounted ? format(currentTime, 'EEEE, MMM do yyyy') : '...'}
                     </div>
                 </div>
             </header>
@@ -291,7 +297,7 @@ export default function KioskPage() {
                 <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
                     <div className="flex items-center gap-2 shrink-0">
                         <Filter className="w-4 h-4 text-indigo-400" />
-                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">STATION:</span>
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">{t('stationFilter')}</span>
                     </div>
                     <button
                         onClick={() => !isLocked && setSelectedStep('ALL')}
@@ -301,7 +307,7 @@ export default function KioskPage() {
                             } ${isLocked ? 'cursor-default' : 'hover:bg-slate-800 cursor-pointer'}`}
                     >
                         <Grid className="w-4 h-4 inline mr-2" />
-                        ALL STATIONS
+                        {t('allStations')}
                     </button>
                     {availableSteps.map(step => (
                         <button
@@ -321,23 +327,23 @@ export default function KioskPage() {
             {/* Stats Bar */}
             <div className="grid grid-cols-4 gap-4 p-4 bg-[#0e0e12] border-b border-slate-800/50">
                 <div className="bg-[#1a1a20] p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-                    <div className="text-slate-400 font-bold text-xs uppercase">Active Orders</div>
+                    <div className="text-slate-400 font-bold text-xs uppercase">{t('stats.activeOrders')}</div>
                     <div className="text-3xl font-black text-white">{filteredOrders.length}</div>
                 </div>
                 <div className="bg-[#1a1a20] p-4 rounded-xl border border-red-900/30 flex items-center justify-between">
-                    <div className="text-red-400 font-bold text-xs uppercase">Held / Blocked</div>
+                    <div className="text-red-400 font-bold text-xs uppercase">{t('stats.heldBlocked')}</div>
                     <div className="text-3xl font-black text-red-500">
                         {orders.filter(o => JSON.stringify(o.data).includes('Hold')).length}
                     </div>
                 </div>
                 <div className="bg-[#1a1a20] p-4 rounded-xl border border-orange-900/30 flex items-center justify-between">
-                    <div className="text-orange-400 font-bold text-xs uppercase">Quality Issues</div>
+                    <div className="text-orange-400 font-bold text-xs uppercase">{t('stats.qualityIssues')}</div>
                     <div className="text-3xl font-black text-orange-500">
                         {orders.filter(o => JSON.stringify(o.data).includes('QN')).length}
                     </div>
                 </div>
                 <div className="bg-[#1a1a20] p-4 rounded-xl border border-indigo-900/30 flex items-center justify-between">
-                    <div className="text-indigo-400 font-bold text-xs uppercase">In Progress</div>
+                    <div className="text-indigo-400 font-bold text-xs uppercase">{t('stats.inProgress')}</div>
                     <div className="text-3xl font-black text-indigo-400">
                         {orders.filter(o => JSON.stringify(o.data).includes('WIP')).length}
                     </div>
@@ -368,7 +374,7 @@ export default function KioskPage() {
                                     } grid items-center shadow-2xl transition-all duration-300`}
                             >
                                 <div className={`flex flex-col border-r border-slate-800/50 ${viewDensity === 'comfortable' ? 'pr-6' : 'pr-3'}`}>
-                                    <div className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em] mb-2">Order Tracking</div>
+                                    <div className="text-[10px] text-slate-600 font-black uppercase tracking-[0.4em] mb-2">{t('table.orderTracking')}</div>
                                     <div className={`${viewDensity === 'comfortable' ? 'text-7xl' : 'text-3xl'} font-black text-white tracking-tighter leading-none truncate tabular-nums`} title={order.woId}>
                                         {order.woId}
                                     </div>
@@ -376,7 +382,7 @@ export default function KioskPage() {
 
                                 <div className={`flex justify-center border-r border-slate-800/50 ${viewDensity === 'comfortable' ? 'pr-6' : 'pr-3'} h-full`}>
                                     <div className={`${viewDensity === 'comfortable' ? 'px-6 py-4 rounded-[2rem] border-4' : 'px-3 py-2 rounded-2xl border-2'} ${status.border} ${status.bg} flex flex-col items-center justify-center w-full shadow-lg`}>
-                                        <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${status.color}`}>State</div>
+                                        <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${status.color}`}>{t('table.state')}</div>
                                         <span className={`${viewDensity === 'comfortable' ? 'text-4xl' : 'text-xl'} font-black tracking-tighter ${status.color}`}>{status.label}</span>
                                     </div>
                                 </div>
@@ -396,9 +402,8 @@ export default function KioskPage() {
                                         // Find index of the target step
                                         const stepIndex = availableSteps.findIndex(s => s === targetStep);
 
-                                        // Safety parsing function for DD-MMM[, HH:mm] format
                                         // Safety parsing function for various formats
-                                        const parseStepDate = (val: any) => {
+                                        const parseStepDate = (val: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
                                             if (!val || typeof val !== 'string') return null;
 
                                             // Case 1: YYYY-MM-DD [HH:mm] (Standard format)
@@ -441,7 +446,7 @@ export default function KioskPage() {
                                             return (
                                                 <div className="flex items-center justify-center h-12 text-center">
                                                     <span className="text-xs font-black text-indigo-400 uppercase tracking-[0.2em]">
-                                                        Step Completed
+                                                        {t('table.stepCompleted')}
                                                     </span>
                                                 </div>
                                             );
@@ -463,7 +468,7 @@ export default function KioskPage() {
                                             return (
                                                 <div className="flex items-center justify-center h-12">
                                                     <span className="text-xs font-black text-slate-800 uppercase tracking-[0.2em]">
-                                                        Queueing (Prev Not Done)
+                                                        {t('table.queueing')}
                                                     </span>
                                                 </div>
                                             );
@@ -509,7 +514,7 @@ export default function KioskPage() {
 
                                 {/* Column 4: Last Updated (Fixed Width) */}
                                 <div className="text-right">
-                                    <div className="text-[10px] text-slate-600 font-black uppercase tracking-widest mb-1 line-clamp-1">Updated</div>
+                                    <div className="text-[10px] text-slate-600 font-black uppercase tracking-widest mb-1 line-clamp-1">{t('table.updated')}</div>
                                     <div className={`${viewDensity === 'comfortable' ? 'text-xl' : 'text-sm'} font-bold text-indigo-400 tabular-nums`}>
                                         {format(new Date(order.updatedAt), viewDensity === 'comfortable' ? 'MMM dd, HH:mm' : 'HH:mm')}
                                     </div>
@@ -519,7 +524,7 @@ export default function KioskPage() {
                     })
                 ) : (
                     <div className="h-full flex items-center justify-center text-slate-600 text-3xl font-bold italic tracking-tighter uppercase">
-                        NO ACTIVE ORDERS IN SYSTEM
+                        {t('table.noActiveOrders')}
                     </div>
                 )}
             </div>
@@ -555,9 +560,9 @@ export default function KioskPage() {
                             </button>
                         </div>
 
-                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">Console Secure</h2>
+                        <h2 className="text-3xl font-black text-white mb-2 uppercase tracking-tight">{t('lock.secure')}</h2>
                         <p className="text-slate-500 font-bold text-sm tracking-widest uppercase mb-8">
-                            Enter Password for <span className="text-indigo-400">{username}</span> to Unlock
+                            {t('lock.enterPass', { username })}
                         </p>
 
                         <div className="space-y-6">
@@ -595,14 +600,14 @@ export default function KioskPage() {
                                         }
                                     }
                                 }}
-                                placeholder="Enter Password"
+                                placeholder={t('lock.placeholder')}
                                 className={`w-full bg-[#0a0a0c] border-2 rounded-2xl px-6 py-4 text-2xl text-center font-mono tracking-widest focus:outline-none transition-all ${pinError ? 'border-red-500 animate-shake text-red-500' : 'border-slate-800 focus:border-indigo-600'
                                     }`}
                             />
 
                             {pinError && (
                                 <p className="text-red-500 text-center font-black text-xs uppercase tracking-widest animate-bounce">
-                                    Access Denied • Invalid Password
+                                    {t('lock.denied')}
                                 </p>
                             )}
 
@@ -634,7 +639,7 @@ export default function KioskPage() {
                                 disabled={isVerifying}
                                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-5 rounded-2xl text-xl font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 active:scale-95 transition-all disabled:opacity-50"
                             >
-                                {isVerifying ? 'Verifying...' : 'Authenticate'}
+                                {isVerifying ? t('Common.loading') : t('lock.authenticate')}
                             </button>
 
                             <div className="relative flex py-2 items-center">
@@ -651,12 +656,12 @@ export default function KioskPage() {
                                 className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 py-4 rounded-2xl text-lg font-bold uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-3"
                             >
                                 <LogOut className="w-5 h-5" />
-                                Log Out / Switch User
+                                {t('lock.logout')}
                             </button>
                         </div>
 
                         <div className="mt-8 text-center">
-                            <p className="text-[10px] text-slate-700 font-black uppercase tracking-[0.3em]">Hardware ID: {mounted ? window.navigator.userAgent.slice(0, 20) : 'N/A'}</p>
+                            <p className="text-[10px] text-slate-700 font-black uppercase tracking-[0.3em]">{t('lock.hardwareId')}: {mounted ? window.navigator.userAgent.slice(0, 20) : 'N/A'}</p>
                         </div>
                     </div>
                 </div>

@@ -305,6 +305,47 @@
         "saveChanges": "Save Changes",
         "updatingUser": "Updating {username}"
     },
+    "Kiosk": {
+        "title": "Shop Floor Monitor",
+        "monitorMode": "Display Mode",
+        "adminMode": "Administrative Mode",
+        "clickLogoExit": "Click Logo to Exit",
+        "selectProduct": "SELECT PRODUCT",
+        "noProduct": "SELECT PRODUCT",
+        "stationFilter": "STATION:",
+        "allStations": "ALL STATIONS",
+        "stats": {
+            "activeOrders": "Active Orders",
+            "heldBlocked": "Held / Blocked",
+            "qualityIssues": "Quality Issues",
+            "inProgress": "In Progress"
+        },
+        "table": {
+            "orderTracking": "Order Tracking",
+            "state": "State",
+            "updated": "Updated",
+            "stepCompleted": "Step Completed",
+            "queueing": "Queueing (Prev Not Done)",
+            "noActiveOrders": "NO ACTIVE ORDERS IN SYSTEM"
+        },
+        "density": {
+            "comfortable": "Comfortable View",
+            "compact": "Compact View",
+            "switchComfortable": "Switch to Comfortable View",
+            "switchCompact": "Switch to Compact View"
+        },
+        "lock": {
+            "lockConsole": "Lock Console",
+            "unlockConsole": "Unlock Console",
+            "secure": "Console Secure",
+            "enterPass": "Enter Password for {username} to Unlock",
+            "placeholder": "Enter Password",
+            "authenticate": "Authenticate",
+            "denied": "Access Denied • Invalid Password",
+            "logout": "Log Out / Switch User",
+            "hardwareId": "Hardware ID"
+        }
+    },
     "Login": {
         "title": "iProTraX",
         "subtitle": "Sign in to your account",
