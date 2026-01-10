@@ -22,5 +22,7 @@
         - text: Login
     - link "Don't have an account? Create one" [ref=e32] [cursor=pointer]:
       - /url: /register
-  - alert [ref=e33]
+  - button "Open Next.js Dev Tools" [ref=e38] [cursor=pointer]:
+    - img [ref=e39]
+  - alert [ref=e42]
 ```
