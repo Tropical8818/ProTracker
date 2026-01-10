@@ -161,7 +161,7 @@ flowchart TB
     end
 
     subgraph AI ["Intelligence (智能)"]
-        OpenAI[OpenAI / Ollama (Local AI)]
+        OpenAI["OpenAI / Ollama (Local AI)"]
     end
 
     %% Connections
