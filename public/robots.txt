@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# iProTraX - Manufacturing Collaboration Platform
+Sitemap: https://iprotrax.work/sitemap.xml
