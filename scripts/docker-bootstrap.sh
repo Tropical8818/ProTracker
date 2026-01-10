@@ -15,11 +15,11 @@ fi
 
 # Database schema is pre-synced during Docker build (prisma db push)
 # The mounted volume will use existing database if present, or the pre-created one
-echo "📦 Database schema ready (pre-synced during build)"
+echo "📦 Checking database schema..."
 
-# Ensure migrations are applied to the mounted database
-echo "🗄️  Running database migrations..."
-npx prisma migrate deploy
+# Ensure schema is synced (handles both new and existing databases)
+echo "🗄️  Synchronizing database schema..."
+npx prisma db push --accept-data-loss --skip-generate
 
 # Check if we need to seed the default admin
 echo "🔍 Checking for default admin user..."
