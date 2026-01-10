@@ -1,19 +1,35 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { MessageCircle, Package, Wrench, AlertTriangle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Props {
     orderId: string;
     stepName: string;
 }
 
+interface Comment {
+    id: string;
+    category: string;
+    content?: string;
+    note?: string;
+    triggeredStatus?: string;
+    createdAt: string;
+    user: {
+        username: string;
+        role: string;
+    };
+    mentionedUsers?: Array<{
+        id: string;
+        username: string;
+    }>;
+}
+
 export function CommentList({ orderId, stepName }: Props) {
-    const [comments, setComments] = useState<any[]>([]);
+    const [comments, setComments] = useState<Comment[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchComments();
-    }, [orderId, stepName]);
+    const t = useTranslations('Operation');
 
     const fetchComments = async () => {
         try {
@@ -31,6 +47,33 @@ export function CommentList({ orderId, stepName }: Props) {
         }
     };
 
+    useEffect(() => {
+        fetchComments();
+    }, [orderId, stepName]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const getCategoryIcon = (category: string) => {
+        const cat = (category || '').toUpperCase();
+        if (cat === 'MATERIAL_SHORTAGE' || cat === 'MATERIAL') {
+            return <Package size={16} className="text-orange-600" />;
+        }
+        if (cat === 'EQUIPMENT_FAILURE' || cat === 'MACHINE') {
+            return <Wrench size={16} className="text-red-600" />;
+        }
+        if (cat === 'QUALITY_ISSUE' || cat === 'QUALITY') {
+            return <AlertTriangle size={16} className="text-yellow-600" />;
+        }
+        return <MessageCircle size={16} className="text-blue-600" />;
+    };
+
+    const getCategoryLabel = (category: string) => {
+        const cat = (category || '').toUpperCase();
+        if (cat === 'MATERIAL_SHORTAGE' || cat === 'MATERIAL') return t('category_material');
+        if (cat === 'EQUIPMENT_FAILURE' || cat === 'MACHINE') return t('category_machine');
+        if (cat === 'QUALITY_ISSUE' || cat === 'QUALITY') return t('category_quality');
+        if (cat === 'PROCESS_ISSUE' || cat === 'PROCESS') return t('category_process');
+        return t('category_other');
+    };
+
     if (loading) {
         return <div className="text-sm text-gray-500 text-center py-4">Loading...</div>;
     }
@@ -42,28 +85,6 @@ export function CommentList({ orderId, stepName }: Props) {
             </div>
         );
     }
-
-    const getCategoryIcon = (category: string) => {
-        switch (category) {
-            case 'MATERIAL_SHORTAGE':
-                return <Package size={16} className="text-orange-600" />;
-            case 'EQUIPMENT_FAILURE':
-                return <Wrench size={16} className="text-red-600" />;
-            case 'QUALITY_ISSUE':
-                return <AlertTriangle size={16} className="text-yellow-600" />;
-            default:
-                return <MessageCircle size={16} className="text-blue-600" />;
-        }
-    };
-
-    const getCategoryLabel = (category: string) => {
-        switch (category) {
-            case 'MATERIAL_SHORTAGE': return 'Material';
-            case 'EQUIPMENT_FAILURE': return 'Equipment';
-            case 'QUALITY_ISSUE': return 'Quality';
-            default: return 'General';
-        }
-    };
 
     return (
         <div className="space-y-3">
@@ -77,15 +98,28 @@ export function CommentList({ orderId, stepName }: Props) {
                         <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="font-semibold text-sm text-gray-900">
-                                    {comment.user.username}
+                                    {comment.user?.username || 'Unknown'}
                                 </span>
                                 <span className="text-xs text-gray-500">
-                                    {comment.user.role === 'admin' ? 'Admin' :
-                                        comment.user.role === 'supervisor' ? 'Supervisor' : 'Worker'}
+                                    {comment.user?.role === 'admin' ? 'Admin' :
+                                        comment.user?.role === 'supervisor' ? 'Supervisor' : 'Worker'}
                                 </span>
                                 <span className="text-xs px-2 py-0.5 bg-gray-100 rounded">
                                     {getCategoryLabel(comment.category)}
                                 </span>
+                                {comment.mentionedUsers && comment.mentionedUsers.length > 0 && (
+                                    <>
+                                        <span className="text-[8px] text-slate-400">→</span>
+                                        {comment.mentionedUsers.map((user: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                                            <span
+                                                key={user.id}
+                                                className="text-[8px] px-1 py-0.5 bg-indigo-50 text-indigo-600 rounded font-medium"
+                                            >
+                                                @{user.username}
+                                            </span>
+                                        ))}
+                                    </>
+                                )}
                             </div>
 
                             <p className="text-sm text-gray-700 whitespace-pre-wrap">

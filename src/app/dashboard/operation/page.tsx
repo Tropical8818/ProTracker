@@ -49,10 +49,12 @@ function OperationContent() {
     const [commentText, setCommentText] = useState('');
     const [sendingComment, setSendingComment] = useState(false);
     const [commentSuccess, setCommentSuccess] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [stepComments, setStepComments] = useState<any[]>([]); // Store history
     const [loadingComments, setLoadingComments] = useState(false);
     const [mentionMenuOpen, setMentionMenuOpen] = useState(false);
     const [selectedMention, setSelectedMention] = useState('');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [supervisors, setSupervisors] = useState<any[]>([]); // List of supervisors for mentions
     const [unreadStats, setUnreadStats] = useState<Record<string, { unread: number }>>({}); // Per-user unread stats
 
@@ -645,7 +647,7 @@ function OperationContent() {
                                         </div>
                                     ) : stepComments.length > 0 ? (
                                         <div className="divide-y divide-slate-100">
-                                            {stepComments.map((comment: any) => (
+                                            {stepComments.map((comment: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
                                                 <div key={comment.id} className="px-2.5 py-2 hover:bg-slate-50 transition-colors group">
                                                     {/* 头部：发送者、角色、分类、时间、删除按钮 */}
                                                     <div className="flex items-center gap-1.5 mb-1">
@@ -657,8 +659,15 @@ function OperationContent() {
                                                                 {comment.user.role}
                                                             </span>
                                                         )}
-                                                        <span className={`text-[8px] px-1 py-0.5 rounded font-medium ${COMMENT_CATEGORIES.find(c => c.key === comment.category)?.color || 'bg-slate-100'}`}>
-                                                            {COMMENT_CATEGORIES.find(c => c.key === comment.category)?.label || comment.category}
+                                                        <span className={`text-[8px] px-1 py-0.5 rounded font-medium ${COMMENT_CATEGORIES.find(c => c.key === comment.category.toLowerCase() || (comment.category === 'MATERIAL_SHORTAGE' && c.key === 'material') || (comment.category === 'EQUIPMENT_FAILURE' && c.key === 'machine') || (comment.category === 'QUALITY_ISSUE' && c.key === 'quality'))?.color || 'bg-slate-100'}`}>
+                                                            {(() => {
+                                                                const cat = comment.category.toUpperCase();
+                                                                if (cat === 'MATERIAL_SHORTAGE' || cat === 'MATERIAL') return t('category_material');
+                                                                if (cat === 'EQUIPMENT_FAILURE' || cat === 'MACHINE') return t('category_machine');
+                                                                if (cat === 'QUALITY_ISSUE' || cat === 'QUALITY') return t('category_quality');
+                                                                if (cat === 'PROCESS_ISSUE' || cat === 'PROCESS') return t('category_process');
+                                                                return t('category_other');
+                                                            })()}
                                                         </span>
                                                         {comment.mentionedUsers && comment.mentionedUsers.length > 0 && (
                                                             <>
