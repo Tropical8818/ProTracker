@@ -40,14 +40,19 @@ model Order {
   woId          String    // Work Order ID from Excel
   productId     String
   product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  data          String    // JSON: Dynamic field values { "Step1": "Done", "Step2": "WIP", "Received": "2024-..." }
-  commentStats  String?   // JSON: Cached statistics {"焊接": {"total": 3, "unread": 1}}
+  data          String    // JSON: Dynamic field values
+  status        String    @default("N/A") // Promoted field for indexing
+  priority      String    @default("Normal") // Promoted field for indexing
+  commentStats  String?   // JSON: Cached statistics
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   logs          OperationLog[]
   comments      Comment[]
 
-  @@unique([productId, woId]) // WO ID must be unique within a product line
+  @@unique([productId, woId])
+  @@index([productId])
+  @@index([status])
+  @@index([priority])
 }
 
 model OperationLog {
@@ -64,6 +69,11 @@ model OperationLog {
 
   // Denormalized fields for easier history viewing if user/order is deleted
   snapshot      String?   // JSON snapshot of relevant info
+  
+  @@index([timestamp])
+  @@index([action])
+  @@index([orderId])
+  @@index([userId])
 }
 
 model Comment {
