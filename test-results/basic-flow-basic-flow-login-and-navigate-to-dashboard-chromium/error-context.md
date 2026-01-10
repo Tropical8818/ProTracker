@@ -9,10 +9,10 @@
       - paragraph [ref=e11]: Sign in to your account
     - generic [ref=e12]:
       - generic [ref=e13]:
-        - textbox "Employee ID" [ref=e14]: user
+        - textbox "Employee ID" [ref=e14]: admin
         - img [ref=e15]
       - generic [ref=e17]:
-        - textbox "Password" [ref=e18]: user
+        - textbox "Password" [ref=e18]: admin123
         - img [ref=e19]
         - button [ref=e22]:
           - img [ref=e23]
